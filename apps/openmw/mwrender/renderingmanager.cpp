@@ -275,8 +275,6 @@ namespace MWRender
 
         mEffectManager.reset(new EffectManager(sceneRoot, mResourceSystem));
 
-        mWater.reset(new Water(mRootNode, sceneRoot, mResourceSystem, mViewer->getIncrementalCompileOperation(), resourcePath));
-
         DLLandFogStart = Settings::Manager::getFloat("distant land fog start", "Fog");
         DLLandFogEnd = Settings::Manager::getFloat("distant land fog end", "Fog");
         DLUnderwaterFogStart = Settings::Manager::getFloat("distant underwater fog start", "Fog");
@@ -314,6 +312,9 @@ namespace MWRender
 
         mTerrain->setTargetFrameRate(Settings::Manager::getFloat("target framerate", "Cells"));
         mTerrain->setWorkQueue(mWorkQueue.get());
+
+        // water goes after terrain for correct waterculling order
+        mWater.reset(new Water(mRootNode, sceneRoot, mResourceSystem, mViewer->getIncrementalCompileOperation(), resourcePath));
 
         mCamera.reset(new Camera(mViewer->getCamera()));
 
@@ -528,6 +529,8 @@ namespace MWRender
 
     void RenderingManager::enableTerrain(bool enable)
     {
+        if (!enable)
+            mWater->setCullCallback(nullptr);
         mTerrain->enable(enable);
     }
 
@@ -722,6 +725,7 @@ namespace MWRender
 
     void RenderingManager::setWaterHeight(float height)
     {
+        mWater->setCullCallback(mTerrain->getHeightCullCallback(height, Mask_Water));
         mWater->setHeight(height);
         mSky->setWaterHeight(height);
     }
