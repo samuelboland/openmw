@@ -1,6 +1,9 @@
 #ifndef GAME_MWWORLD_SCENE_H
 #define GAME_MWWORLD_SCENE_H
 
+#include <osg/Vec4i>
+#include <osg/Vec2i>
+
 #include "ptr.hpp"
 #include "globals.hpp"
 
@@ -79,17 +82,22 @@ namespace MWWorld
 
             osg::Vec3f mLastPlayerPos;
 
+            osg::Vec2i mCurrentGridCenter;
+
             void insertCell (CellStore &cell, bool rescale, Loading::Listener* loadingListener);
 
             // Load and unload cells as necessary to create a cell grid with "X" and "Y" in the center
             void changeCellGrid (int playerCellX, int playerCellY, bool changeEvent = true);
 
-            void getGridCenter(int& cellX, int& cellY);
+            typedef std::pair<osg::Vec3f, osg::Vec4i> PositionCellGrid;
 
             void preloadCells(float dt);
-            void preloadTeleportDoorDestinations(const osg::Vec3f& playerPos, const osg::Vec3f& predictedPos, std::vector<osg::Vec3f>& exteriorPositions);
+            void preloadTeleportDoorDestinations(const osg::Vec3f& playerPos, const osg::Vec3f& predictedPos, std::vector<PositionCellGrid>& exteriorPositions);
             void preloadExteriorGrid(const osg::Vec3f& playerPos, const osg::Vec3f& predictedPos);
-            void preloadFastTravelDestinations(const osg::Vec3f& playerPos, const osg::Vec3f& predictedPos, std::vector<osg::Vec3f>& exteriorPositions);
+            void preloadFastTravelDestinations(const osg::Vec3f& playerPos, const osg::Vec3f& predictedPos, std::vector<PositionCellGrid>& exteriorPositions);
+
+            osg::Vec4i gridCenterToBounds(const osg::Vec2i &centerCell) const;
+            osg::Vec2i getNewGridCenter(const osg::Vec3f &pos, const osg::Vec2i *currentGridCenter = nullptr) const;
 
         public:
 

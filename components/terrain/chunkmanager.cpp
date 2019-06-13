@@ -9,7 +9,6 @@
 #include <components/resource/objectcache.hpp>
 #include <components/resource/scenemanager.hpp>
 
-#include <components/sceneutil/positionattitudetransform.hpp>
 #include <components/sceneutil/lightmanager.hpp>
 
 #include "terraindrawable.hpp"
@@ -34,7 +33,7 @@ ChunkManager::ChunkManager(Storage *storage, Resource::SceneManager *sceneMgr, T
 
 }
 
-osg::ref_ptr<osg::Node> ChunkManager::getChunk(float size, const osg::Vec2f &center, unsigned char lod, unsigned int lodFlags)
+osg::ref_ptr<osg::Node> ChunkManager::getChunk(float size, const osg::Vec2f &center, unsigned char lod, unsigned int lodFlags, bool far, const osg::Vec3f& viewPoint)
 {
     ChunkId id = std::make_tuple(center, lod, lodFlags);
     osg::ref_ptr<osg::Object> obj = mCache->getRefFromObjectCache(id);
@@ -162,10 +161,6 @@ std::vector<osg::ref_ptr<osg::StateSet> > ChunkManager::createPasses(float chunk
 
 osg::ref_ptr<osg::Node> ChunkManager::createChunk(float chunkSize, const osg::Vec2f &chunkCenter, unsigned char lod, unsigned int lodFlags)
 {
-    osg::Vec2f worldCenter = chunkCenter*mStorage->getCellWorldSize();
-    osg::ref_ptr<SceneUtil::PositionAttitudeTransform> transform (new SceneUtil::PositionAttitudeTransform);
-    transform->setPosition(osg::Vec3f(worldCenter.x(), worldCenter.y(), 0.f));
-
     osg::ref_ptr<osg::Vec3Array> positions (new osg::Vec3Array);
     osg::ref_ptr<osg::Vec3Array> normals (new osg::Vec3Array);
     osg::ref_ptr<osg::Vec4ubArray> colors (new osg::Vec4ubArray);
@@ -221,14 +216,13 @@ osg::ref_ptr<osg::Node> ChunkManager::createChunk(float chunkSize, const osg::Ve
         geometry->setPasses(createPasses(chunkSize, chunkCenter, false));
     }
 
-    transform->addChild(geometry);
-    transform->getBound();
-
     if (mSceneManager->getIncrementalCompileOperation())
     {
         mSceneManager->getIncrementalCompileOperation()->add(geometry);
     }
-    return transform;
+    geometry->setNodeMask(mNodeMask);
+
+    return geometry;
 }
 
 }
