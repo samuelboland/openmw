@@ -332,12 +332,6 @@ namespace MWGui
             setupCopyFramebufferToTextureCallback();
         }
 
-        // Turn off rendering except the GUI
-        int oldUpdateMask = mViewer->getUpdateVisitor()->getTraversalMask();
-        int oldCullMask = mViewer->getCamera()->getCullMask();
-        mViewer->getUpdateVisitor()->setTraversalMask(MWRender::Mask_GUI|MWRender::Mask_PreCompile);
-        mViewer->getCamera()->setCullMask(MWRender::Mask_GUI|MWRender::Mask_PreCompile);
-
         MWBase::Environment::get().getInputManager()->update(0, true, true);
 
         //osg::Timer timer;
@@ -352,10 +346,6 @@ namespace MWGui
 
         //if (mViewer->getIncrementalCompileOperation())
             //std::cout << "num to compile " << mViewer->getIncrementalCompileOperation()->getToCompile().size() << std::endl;
-
-        // resume 3d rendering
-        mViewer->getUpdateVisitor()->setTraversalMask(oldUpdateMask);
-        mViewer->getCamera()->setCullMask(oldCullMask);
 
         mLastRenderTime = mTimer.time_m();
     }
