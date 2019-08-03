@@ -40,6 +40,7 @@ namespace osgViewer
 namespace ESM
 {
     struct Cell;
+    struct RefNum;
 }
 
 namespace Terrain
@@ -233,6 +234,8 @@ namespace MWRender
         void setNavMeshNumber(const std::size_t value);
 
         void setActiveGrid(const osg::Vec4i &grid);
+
+        void pagingEnableObject(const ESM::RefNum & refnum, bool enabled);
 
     private:
         void updateProjectionMatrix();
