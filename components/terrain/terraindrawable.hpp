@@ -31,8 +31,8 @@ namespace Terrain
         virtual const char* className() const { return "TerrainDrawable"; }
         virtual const char* libraryName() const { return "Terrain"; }
 
-        TerrainDrawable() = default;
-        ~TerrainDrawable() = default;
+        TerrainDrawable();
+        ~TerrainDrawable();
         TerrainDrawable(const TerrainDrawable& copy, const osg::CopyOp& copyop);
 
         virtual void accept(osg::NodeVisitor &nv);
@@ -48,12 +48,17 @@ namespace Terrain
         void setCompositeMap(CompositeMap* map) { mCompositeMap = map; }
         void setCompositeMapRenderer(CompositeMapRenderer* renderer) { mCompositeMapRenderer = renderer; }
 
+        void createOccluders(const osg::Vec2f& offset);
+        osg::Group* getOccluders();
+
     private:
         PassVector mPasses;
 
         osg::ref_ptr<SceneUtil::LightListCallback> mLightListCallback;
         osg::ref_ptr<CompositeMap> mCompositeMap;
         osg::ref_ptr<CompositeMapRenderer> mCompositeMapRenderer;
+
+        osg::ref_ptr<osg::Group> mOccluders;
     };
 
 }
