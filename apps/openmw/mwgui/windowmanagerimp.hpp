@@ -184,6 +184,7 @@ namespace MWGui
     virtual MWGui::CountDialog* getCountDialog();
     virtual MWGui::ConfirmationDialog* getConfirmationDialog();
     virtual MWGui::TradeWindow* getTradeWindow();
+    virtual MWGui::QuickKeysMenu* getQuickKeysMenu();
 
     /// Make the player use an item, while updating GUI state accordingly
     virtual void useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions=false);

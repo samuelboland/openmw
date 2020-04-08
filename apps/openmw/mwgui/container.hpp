@@ -53,6 +53,8 @@ namespace MWGui
         MyGUI::Button* mTakeButton;
         MyGUI::Button* mCloseButton;
 
+        void onTransferItem(MyGUI::Widget* sender, int count);
+        void onHeaderClicked(int sort);
         void onItemSelected(int index);
         void onBackgroundSelected();
         void dragItem(MyGUI::Widget* sender, int count);

@@ -73,6 +73,7 @@ namespace MWGui
 
         getWidget(mItemView, "ItemView");
         mItemView->eventItemClicked += MyGUI::newDelegate(this, &TradeWindow::onItemSelected);
+        mItemView->getHeader()->eventItemClicked += MyGUI::newDelegate(this, &TradeWindow::onHeaderClicked);
 
         mFilterAll->setStateSelected(true);
 
@@ -144,6 +145,12 @@ namespace MWGui
     {
         checkReferenceAvailable();
     }
+
+    void TradeWindow::onHeaderClicked(int sort)
+    {
+        mSortModel->setSort(sort);
+        mItemView->update();
+    }   
 
     void TradeWindow::onNameFilterChanged(MyGUI::EditBox* _sender)
     {

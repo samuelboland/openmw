@@ -101,6 +101,8 @@
 #include "videowidget.hpp"
 #include "backgroundimage.hpp"
 #include "itemwidget.hpp"
+#include "itemlistwidget.hpp"
+#include "itemlistwidgetheader.hpp"
 #include "screenfader.hpp"
 #include "debugwindow.hpp"
 #include "spellview.hpp"
@@ -225,6 +227,8 @@ namespace MWGui
         ItemView::registerComponents();
         ItemChargeView::registerComponents();
         ItemWidget::registerComponents();
+        ItemListWidget::registerComponents();
+        ItemListWidgetHeader::registerComponents();
         SpellView::registerComponents();
         Gui::registerAllWidgets();
 
@@ -1456,6 +1460,7 @@ namespace MWGui
     MWGui::CountDialog* WindowManager::getCountDialog() { return mCountDialog; }
     MWGui::ConfirmationDialog* WindowManager::getConfirmationDialog() { return mConfirmationDialog; }
     MWGui::TradeWindow* WindowManager::getTradeWindow() { return mTradeWindow; }
+    MWGui::QuickKeysMenu* WindowManager::getQuickKeysMenu() { return mQuickKeysMenu; }
 
     void WindowManager::useItem(const MWWorld::Ptr &item, bool bypassBeastRestrictions)
     {

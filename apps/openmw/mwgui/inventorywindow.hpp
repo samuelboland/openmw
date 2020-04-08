@@ -4,6 +4,8 @@
 #include "windowpinnablebase.hpp"
 #include "mode.hpp"
 
+#include <components/widgets/imagebutton.hpp>
+
 #include "../mwworld/ptr.hpp"
 #include "../mwrender/characterpreview.hpp"
 
@@ -44,10 +46,6 @@ namespace MWGui
 
             void pickUpObject (MWWorld::Ptr object);
 
-            MWWorld::Ptr getAvatarSelectedItem(int x, int y);
-
-            void rebuildAvatar();
-
             SortFilterItemModel* getSortFilterModel();
             TradeItemModel* getTradeModel();
             ItemModel* getModel();
@@ -79,19 +77,20 @@ namespace MWGui
             SortFilterItemModel* mSortModel;
             TradeItemModel* mTradeModel;
 
-            MyGUI::Widget* mAvatar;
-            MyGUI::ImageBox* mAvatarImage;
+            MyGUI::TextBox* mPlayerGold; 
             MyGUI::TextBox* mArmorRating;
-            Widgets::MWDynamicStat* mEncumbranceBar;
+            MyGUI::TextBox* mEncumbranceBar;
 
-            MyGUI::Widget* mLeftPane;
-            MyGUI::Widget* mRightPane;
-
-            MyGUI::Button* mFilterAll;
-            MyGUI::Button* mFilterWeapon;
-            MyGUI::Button* mFilterApparel;
-            MyGUI::Button* mFilterMagic;
-            MyGUI::Button* mFilterMisc;
+            Gui::ImageButton* mAllButton;
+            Gui::ImageButton* mWeaponButton;
+            Gui::ImageButton* mArmorButton;
+            Gui::ImageButton* mClothButton;
+            Gui::ImageButton* mPotionButton;
+            Gui::ImageButton* mIngredientButton;
+            Gui::ImageButton* mBookButton;
+            Gui::ImageButton* mToolButton;
+            Gui::ImageButton* mMagicButton;
+            Gui::ImageButton* mMiscButton;
             
             MyGUI::EditBox* mFilterEdit;
 
@@ -100,15 +99,13 @@ namespace MWGui
             int mLastXSize;
             int mLastYSize;
 
-            std::unique_ptr<MyGUI::ITexture> mPreviewTexture;
-            std::unique_ptr<MWRender::InventoryPreview> mPreview;
-
             bool mTrading;
             float mScaleFactor;
             float mUpdateTimer;
 
             void toggleMaximized();
-
+            
+            void onHeaderClicked(int sort);
             void onItemSelected(int index);
             void onItemSelectedFromSourceModel(int index);
 
@@ -122,16 +119,13 @@ namespace MWGui
             void onWindowResize(MyGUI::Window* _sender);
             void onFilterChanged(MyGUI::Widget* _sender);
             void onNameFilterChanged(MyGUI::EditBox* _sender);
-            void onAvatarClicked(MyGUI::Widget* _sender);
             void onPinToggled();
 
             void updateEncumbranceBar();
             void notifyContentChanged();
             void dirtyPreview();
-            void updatePreviewSize();
             void updateArmorRating();
-
-            void adjustPanes();
+            void updatePlayerGold();
 
             /// Unequips count items from mSelectedItem, if it is equipped, and then updates mSelectedItem in case the items were re-stacked
             void ensureSelectedItemUnequipped(int count);

@@ -451,6 +451,16 @@ namespace MWGui
         }
     }
 
+    bool QuickKeysMenu::isAssigned(const MWWorld::Ptr &item) const
+    {
+        if (item.isEmpty())
+            return false;
+        for (const keyData& quickKey : mKey)
+            if (quickKey.id == item.getCellRef().getRefId())
+                return true; 
+        return false; 
+    }
+
     // ---------------------------------------------------------------------------------------------------------
 
     QuickKeysMenuAssign::QuickKeysMenuAssign (QuickKeysMenu* parent)

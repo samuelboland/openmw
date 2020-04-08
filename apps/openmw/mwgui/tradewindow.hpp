@@ -87,6 +87,7 @@ namespace MWGui
             void onItemSelected (int index);
             void sellItem (MyGUI::Widget* sender, int count);
 
+            void onHeaderClicked(int sort);
             void onFilterChanged(MyGUI::Widget* _sender);
             void onNameFilterChanged(MyGUI::EditBox* _sender);
             void onOfferButtonClicked(MyGUI::Widget* _sender);

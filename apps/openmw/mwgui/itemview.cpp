@@ -10,7 +10,17 @@
 #include <MyGUI_Button.h>
 
 #include "../mwworld/class.hpp"
+#include "../mwworld/inventorystore.hpp"
 
+#include "../mwbase/inputmanager.hpp"
+#include "../mwbase/windowmanager.hpp"
+#include "../mwbase/environment.hpp"
+
+#include "../mwmechanics/actorutil.hpp"
+
+#include "inventorywindow.hpp"
+#include "itemlistwidget.hpp"
+#include "itemlistwidgetheader.hpp"
 #include "itemmodel.hpp"
 #include "itemwidget.hpp"
 
@@ -20,6 +30,7 @@ namespace MWGui
 ItemView::ItemView()
     : mModel(nullptr)
     , mScrollView(nullptr)
+    , mHeader(nullptr)
 {
 }
 
@@ -46,7 +57,9 @@ void ItemView::initialiseOverride()
     assignWidget(mScrollView, "ScrollView");
     if (mScrollView == nullptr)
         throw std::runtime_error("Item view needs a scroll view");
-
+    assignWidget(mHeader, "Header"); 
+    if (mHeader == nullptr)
+        throw std::runtime_error("Item view needs a header view");
     mScrollView->setCanvasAlign(MyGUI::Align::Left | MyGUI::Align::Top);
 }
 
@@ -55,34 +68,22 @@ void ItemView::layoutWidgets()
     if (!mScrollView->getChildCount())
         return;
 
-    int x = 0;
-    int y = 0;
     MyGUI::Widget* dragArea = mScrollView->getChildAt(0);
-    int maxHeight = mScrollView->getHeight();
+    int y = 0;
 
-    int rows = maxHeight/42;
-    rows = std::max(rows, 1);
-    bool showScrollbar = int(std::ceil(dragArea->getChildCount()/float(rows))) > mScrollView->getWidth()/42;
-    if (showScrollbar)
-        maxHeight -= 18;
+    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-24,36));
+    //mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-24,36));
 
-    for (unsigned int i=0; i<dragArea->getChildCount(); ++i)
+    unsigned int count = dragArea->getChildCount();
+    int h = (count) ? dragArea->getChildAt(0)->getHeight() : 0; 
+
+    for (unsigned int i=0; i<count; ++i)
     {
-        MyGUI::Widget* w = dragArea->getChildAt(i);
-
-        w->setPosition(x, y);
-
-        y += 42;
-
-        if (y > maxHeight-42 && i < dragArea->getChildCount()-1)
-        {
-            x += 42;
-            y = 0;
-        }
+        dragArea->getChildAt(i)->setPosition(0,y);
+        y += h;
     }
-    x += 42;
 
-    MyGUI::IntSize size = MyGUI::IntSize(std::max(mScrollView->getSize().width, x), mScrollView->getSize().height);
+    MyGUI::IntSize size = MyGUI::IntSize(mScrollView->getSize().width,std::max(mScrollView->getSize().height, y));
 
     // Canvas size must be expressed with VScroll disabled, otherwise MyGUI would expand the scroll area when the scrollbar is hidden
     mScrollView->setVisibleVScroll(false);
@@ -95,43 +96,48 @@ void ItemView::layoutWidgets()
 
 void ItemView::update()
 {
-    while (mScrollView->getChildCount())
-        MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
-
     if (!mModel)
         return;
 
     mModel->update();
+    
+    while (mScrollView->getChildCount())
+        MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
+    while (mHeader->getChildCount())
+        MyGUI::Gui::getInstance().destroyWidget(mHeader->getChildAt(0)); 
 
     MyGUI::Widget* dragArea = mScrollView->createWidget<MyGUI::Widget>("",0,0,mScrollView->getWidth(),mScrollView->getHeight(),
                                                                        MyGUI::Align::Stretch);
     dragArea->setNeedMouseFocus(true);
     dragArea->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemView::onSelectedBackground);
     dragArea->eventMouseWheel += MyGUI::newDelegate(this, &ItemView::onMouseWheelMoved);
+    
+    int category = dynamic_cast<MWGui::SortFilterItemModel*>(mModel)->getCategory();  
+
+    if (category == MWGui::SortFilterItemModel::Category_Weapon)
+        mHeader->changeWidgetSkin("MW_ItemListHeader_Weapon");
+    else if (category == MWGui::SortFilterItemModel::Category_Armor)
+        mHeader->changeWidgetSkin("MW_ItemListHeader_Armor");
+    else 
+        mHeader->changeWidgetSkin("MW_ItemListHeader_All");
 
     for (ItemModel::ModelIndex i=0; i<static_cast<int>(mModel->getItemCount()); ++i)
     {
         const ItemStack& item = mModel->getItem(i);
+        ItemListWidget* itemWidget = dragArea->createWidget<ItemListWidget>("MW_ItemList",
+            MyGUI::IntCoord(0,0,mScrollView->getWidth()-24, 35), MyGUI::Align::HStretch | MyGUI::Align::Top);
 
-        ItemWidget* itemWidget = dragArea->createWidget<ItemWidget>("MW_ItemIcon",
-            MyGUI::IntCoord(0, 0, 42, 42), MyGUI::Align::Default);
+        itemWidget->setNeedKeyFocus(true);
+        itemWidget->setNeedMouseFocus(true);
+        itemWidget->setItem(item, category);
         itemWidget->setUserString("ToolTipType", "ItemModelIndex");
-        itemWidget->setUserData(std::make_pair(i, mModel));
-        ItemWidget::ItemState state = ItemWidget::None;
-        if (item.mType == ItemStack::Type_Barter)
-            state = ItemWidget::Barter;
-        if (item.mType == ItemStack::Type_Equipped)
-            state = ItemWidget::Equip;
-        itemWidget->setItem(item.mBase, state);
-        itemWidget->setCount(item.mCount);
-
+        itemWidget->setUserData(std::make_pair(i,mModel)); 
         itemWidget->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemView::onSelectedItem);
         itemWidget->eventMouseWheel += MyGUI::newDelegate(this, &ItemView::onMouseWheelMoved);
+        itemWidget->eventKeyButtonPressed += MyGUI::newDelegate(this, &ItemView::onKeyButtonPressed);
     }
-
     layoutWidgets();
 }
-
 void ItemView::resetScrollBars()
 {
     mScrollView->setViewOffset(MyGUI::IntPoint(0, 0));
@@ -143,6 +149,35 @@ void ItemView::onSelectedItem(MyGUI::Widget *sender)
     eventItemClicked(index);
 }
 
+void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyGUI::Char character)
+{
+     // leave the handling of this up to the various views, like handle this in inventorywindow 
+    //ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+    //eventKeyButtonPressed(index, key);
+    ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+    if (key == MyGUI::KeyCode::E)
+    {
+        MWBase::WindowManager *winMgr = MWBase::Environment::get().getWindowManager();
+        GuiMode mode = winMgr->getMode();
+        if (mode != GM_Inventory)
+            return;
+        
+        const ItemStack& item = mModel->getItem(index);
+        MWWorld::Ptr player = MWMechanics::getPlayer();
+
+        MWWorld::InventoryStore& invStore = player.getClass().getInventoryStore(player);
+            
+        std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
+        MWBase::Environment::get().getWindowManager()->playSound(sound);
+        if (invStore.isEquipped(item.mBase))
+            invStore.unequipItem(item.mBase, player);
+        else 
+            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(item.mBase);
+        
+        update();
+    }
+}
+
 void ItemView::onSelectedBackground(MyGUI::Widget *sender)
 {
     eventBackgroundClicked();
@@ -150,10 +185,10 @@ void ItemView::onSelectedBackground(MyGUI::Widget *sender)
 
 void ItemView::onMouseWheelMoved(MyGUI::Widget *_sender, int _rel)
 {
-    if (mScrollView->getViewOffset().left + _rel*0.3f > 0)
+    if (mScrollView->getViewOffset().top + _rel*0.3f > 0)
         mScrollView->setViewOffset(MyGUI::IntPoint(0, 0));
     else
-        mScrollView->setViewOffset(MyGUI::IntPoint(static_cast<int>(mScrollView->getViewOffset().left + _rel*0.3f), 0));
+        mScrollView->setViewOffset(MyGUI::IntPoint(0,static_cast<int>(mScrollView->getViewOffset().top + _rel*0.3f)));
 }
 
 void ItemView::setSize(const MyGUI::IntSize &_value)
