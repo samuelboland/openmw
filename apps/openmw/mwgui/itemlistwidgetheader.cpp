@@ -74,7 +74,6 @@ namespace MWGui
 
     void ItemListWidgetHeader::onSortClicked(MyGUI::Widget* sender)
     {
-        std::cout << "CLICKED" << std::endl; 
         eventItemClicked(*sender->getUserData<int>());
     }
 }

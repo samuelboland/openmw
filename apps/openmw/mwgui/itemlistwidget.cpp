@@ -5,7 +5,7 @@
 #include <MyGUI_RenderManager.h>
 #include <MyGUI_TextBox.h>
 #include <MyGUI_LanguageManager.h>
-#include <MYGUI/MyGUI_Colour.h>
+#include <MyGUI_Colour.h>
 
 #include "../mwbase/world.hpp"
 #include "../mwbase/environment.hpp"
@@ -106,15 +106,13 @@ namespace MWGui
 
         if (item.mType == ItemStack::Type_Barter)
             mName->setTextColour(MyGUI::Colour::parse(MyGUI::LanguageManager::getInstance().replaceTags("#{fontcolour=normal_over}")));
-        if (item.mType == ItemStack::Type_Equipped)
-            mName->setTextColour(MyGUI::Colour::parse(MyGUI::LanguageManager::getInstance().replaceTags("#{fontcolour=normal_pressed}")));
 
         int x = mName->getTextSize().width+mIcon->getParent()->getWidth()+8;
         int size = 16;
         if (item.mFlags & ItemStack::Flag_Enchanted)
         {
             MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
-            MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+                MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
             t->setImageTexture("textures\\ui\\enchanted.dds");
             t->setNeedMouseFocus(false);
             x += size;
@@ -122,7 +120,7 @@ namespace MWGui
         if (item.mFlags & ItemStack::Flag_Bound)
         {
             MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
-            MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+                MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
             t->setImageTexture("textures\\ui\\bound.dds");
             t->setNeedMouseFocus(false);
             x+= size;
@@ -130,7 +128,7 @@ namespace MWGui
         if (MWBase::Environment::get().getWindowManager()->getQuickKeysMenu()->isAssigned(item.mBase))
         {
             MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
-            MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+                MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
             t->setImageTexture("textures\\ui\\favorite.dds");
             t->setNeedMouseFocus(false);
             x+= size;
@@ -146,12 +144,21 @@ namespace MWGui
             if (!isContainer)
             {
                 MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
-                MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+                    MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
                 t->setImageTexture("textures\\ui\\stolen.dds");
                 t->setNeedMouseFocus(false);
                 x+= size;            
             }
         }
+
+        if (item.mType == ItemStack::Type_Equipped)
+        {
+            MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
+                MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+            t->setImageTexture("textures\\ui\\equipped.dds");
+            t->setNeedMouseFocus(false);
+            x+= size;
+        }   
 
     }
 

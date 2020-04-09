@@ -107,7 +107,7 @@ namespace MWGui
         mToolButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
         mMagicButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
 
-        //mSortModel->setSort(SortFilterItemModel::Sort_Default);
+        //mSortModel->setSort(SortFilterItemModel::Sort_Name);
         //mFilterAll->setStateSelected(true);
 
         setGuiMode(mGuiMode);
@@ -365,6 +365,7 @@ namespace MWGui
 
         if (!mPtr.isEmpty())
         {
+            mSortModel->setSort(SortFilterItemModel::Sort_Name);
             mItemView->update();
             notifyContentChanged();
         }
@@ -478,7 +479,6 @@ namespace MWGui
         //mMagicButton->setStateSelected(false);
         //mMiscButton->setStateSelected(false);
 
-        //mSortModel->setSort(SortFilterItemModel::Sort_Default);
         mItemView->update();
 
         //_sender->castType<MyGUI::Button>()->setStateSelected(true);
