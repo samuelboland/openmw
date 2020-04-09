@@ -60,6 +60,7 @@ namespace MWGui
         , mArmorClass(nullptr)
         , mWeaponType(nullptr)
         , mItem(nullptr)
+        , mOverlay(nullptr)
     {
         setNeedKeyFocus(true);  
     }
@@ -160,6 +161,11 @@ namespace MWGui
             x+= size;
         }   
 
+        mOverlay = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
+            MyGUI::IntCoord(mIcon->getWidth()+2,0,mItem->getParent()->getWidth(),mItem->getParent()->getHeight()), MyGUI::Align::Stretch);
+        mOverlay->setImageTexture("textures\\ui\\selected.dds");
+        mOverlay->setNeedMouseFocus(false);
+        mOverlay->setVisible(false);
     }
 
     void ItemListWidget::registerComponents()
@@ -185,6 +191,7 @@ namespace MWGui
     {
         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
         mName->setStateSelected(true);
+        mOverlay->setVisible(true);
         Base::onMouseSetFocus(_old);
     }
 
@@ -192,6 +199,7 @@ namespace MWGui
     {
         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
         mName->setStateSelected(false);
+        mOverlay->setVisible(false);
         Base::onMouseLostFocus(_new);
     }
 

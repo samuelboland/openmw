@@ -68,7 +68,8 @@ namespace MWGui
         Gui::SharedStateButton* mArmorClass;
         Gui::SharedStateButton* mWeaponType; 
         Gui::HBox* mItem;
-
+        MyGUI::ImageBox* mOverlay;
+        
         static const std::unordered_map<ESM::Weapon::Type, const std::string> mWeapType; 
         static const std::string mBlank; 
     };

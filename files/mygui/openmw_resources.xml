@@ -118,12 +118,11 @@
         <Widget type="Widget" position="0 0 0 35" name="Root">
             <Widget type="HBox" skin="" position="0 0 0 35" align="Top HStretch" name="Item">
                 <Property key="NeedMouse" value="false"/>
-
                 <Widget type="Widget" position="0 0 40 26" align="VCenter Left" >
                     <Widget type="ImageBox" position="0 0 26 26" align="Left Top" skin="ImageBox" name="Icon" />
                 </Widget>
 
-                <Widget type="SharedStateButton" skin="SandTextButton" position="0 0 0 28" name="Name" align="Left Top ">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 0 28" name="Name" align="Left Top ">
                     <Property key="TextAlign" value="Left VCenter" /> 
                     <Property key="Caption" value="-"/>
                     <Property key="Visible" value="false"/>
@@ -132,27 +131,27 @@
 
                 <Widget type="Spacer" />
 
-                <Widget type="SharedStateButton" skin="SpellTextUnequipped" position="0 0 90 28" name="ArmorClass" align="Right Top">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 90 28" name="ArmorClass" align="Right Top">
                     <Property key="TextAlign" value="Right VCenter" />
                     <Property key="Caption" value="-"/>
                     <Property key="Visible" value="false"/>
                 </Widget>
-                <Widget type="SharedStateButton" skin="SpellTextUnequipped" position="0 0 120 28" name="WeaponType" align="Right Top">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 120 28" name="WeaponType" align="Right Top">
                     <Property key="TextAlign" value="Right VCenter" />
                     <Property key="Caption" value="-"/>
                     <Property key="Visible" value="false"/>
                 </Widget>
-                <Widget type="SharedStateButton" skin="SpellTextUnequipped" position="0 0 80 28" name="Value" align="Right Top">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 80 28" name="Value" align="Right Top">
                     <Property key="TextAlign" value="Right VCenter" />
                     <Property key="Caption" value="-"/>
                     <Property key="Visible" value="false"/>
                 </Widget>
-                <Widget type="SharedStateButton" skin="SpellTextUnequipped" position="0 0 80 28" name="Weight" align="Right Top">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 80 28" name="Weight" align="Right Top">
                     <Property key="TextAlign" value="Right VCenter" />
                     <Property key="Caption" value="-"/>
                     <Property key="Visible" value="false"/>
                 </Widget>
-                <Widget type="SharedStateButton" skin="SpellTextUnequipped" position="0 0 80 28" name="Ratio" align="Right Top">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 80 28" name="Ratio" align="Right Top">
                     <Property key="TextAlign" value="Right VCenter" /> 
                     <Property key="Caption" value="-"/>      
                     <Property key="Visible" value="false"/> 
