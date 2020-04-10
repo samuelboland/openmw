@@ -71,8 +71,7 @@ void ItemView::layoutWidgets()
     MyGUI::Widget* dragArea = mScrollView->getChildAt(0);
     int y = 0;
 
-    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-24,36));
-    //mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-24,36));
+    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-50,36));
 
     unsigned int count = dragArea->getChildCount();
     int h = (count) ? dragArea->getChildAt(0)->getHeight() : 0; 
@@ -121,11 +120,11 @@ void ItemView::update()
     else 
         mHeader->changeWidgetSkin("MW_ItemListHeader_All");
 
-    for (ItemModel::ModelIndex i=0; i<static_cast<int>(mModel->getItemCount()); ++i)
+    for (ItemModel::ModelIndex i=0; i < static_cast<int>(mModel->getItemCount()); ++i)
     {
         const ItemStack& item = mModel->getItem(i);
         ItemListWidget* itemWidget = dragArea->createWidget<ItemListWidget>("MW_ItemList",
-            MyGUI::IntCoord(0,0,mScrollView->getWidth()-24, 35), MyGUI::Align::HStretch | MyGUI::Align::Top);
+            MyGUI::IntCoord(0,0,mScrollView->getWidth()-50, 35), MyGUI::Align::HStretch | MyGUI::Align::Top);
 
         itemWidget->setNeedKeyFocus(true);
         itemWidget->setNeedMouseFocus(true);
@@ -151,31 +150,8 @@ void ItemView::onSelectedItem(MyGUI::Widget *sender)
 
 void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyGUI::Char character)
 {
-     // leave the handling of this up to the various views, like handle this in inventorywindow 
-    //ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
-    //eventKeyButtonPressed(index, key);
     ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
-    if (key == MyGUI::KeyCode::E)
-    {
-        MWBase::WindowManager *winMgr = MWBase::Environment::get().getWindowManager();
-        GuiMode mode = winMgr->getMode();
-        if (mode != GM_Inventory)
-            return;
-        
-        const ItemStack& item = mModel->getItem(index);
-        MWWorld::Ptr player = MWMechanics::getPlayer();
-
-        MWWorld::InventoryStore& invStore = player.getClass().getInventoryStore(player);
-            
-        std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
-        MWBase::Environment::get().getWindowManager()->playSound(sound);
-        if (invStore.isEquipped(item.mBase))
-            invStore.unequipItem(item.mBase, player);
-        else 
-            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(item.mBase);
-        
-        update();
-    }
+    eventKeyButtonPressed(sender, key);
 }
 
 void ItemView::onSelectedBackground(MyGUI::Widget *sender)

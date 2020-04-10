@@ -189,6 +189,7 @@ namespace MWGui
 
     void ItemListWidget::onMouseSetFocus(MyGUI::Widget *_old) 
     {
+        MWBase::Environment::get().getWindowManager()->playSound("Menu Click", 0.5, 1.1);
         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
         mName->setStateSelected(true);
         mOverlay->setVisible(true);

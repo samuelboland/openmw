@@ -25,13 +25,13 @@ namespace MWGui
 
         ItemListWidgetHeader* getHeader() { return mHeader; }
 
-        typedef MyGUI::delegates::CMultiDelegate2<ItemModel::ModelIndex,MyGUI::KeyCode> EventHandle_ModelIndexKey;
+        typedef MyGUI::delegates::CMultiDelegate2<MyGUI::Widget*,MyGUI::KeyCode> EventHandle_WidgetKey;
         typedef MyGUI::delegates::CMultiDelegate1<ItemModel::ModelIndex> EventHandle_ModelIndex;
         typedef MyGUI::delegates::CMultiDelegate0 EventHandle_Void;
         /// Fired when an item was clicked
         EventHandle_ModelIndex eventItemClicked;
         /// Fired when a key is pressed over a focused item 
-        EventHandle_ModelIndexKey eventKeyButtonPressed;        
+        EventHandle_WidgetKey eventKeyButtonPressed;        
         /// Fired when the background was clicked (useful for drag and drop)
         EventHandle_Void eventBackgroundClicked;
 

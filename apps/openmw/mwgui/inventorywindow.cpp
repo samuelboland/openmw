@@ -95,6 +95,7 @@ namespace MWGui
         mItemView->eventItemClicked += MyGUI::newDelegate(this, &InventoryWindow::onItemSelected);
         mItemView->eventBackgroundClicked += MyGUI::newDelegate(this, &InventoryWindow::onBackgroundSelected);
         mItemView->getHeader()->eventItemClicked += MyGUI::newDelegate(this, &InventoryWindow::onHeaderClicked);
+        mItemView->eventKeyButtonPressed += MyGUI::newDelegate(this, &InventoryWindow::onKeyButtonPressed);
 
         mAllButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
         mWeaponButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
@@ -196,6 +197,49 @@ namespace MWGui
     ItemModel* InventoryWindow::getModel()
     {
         return mTradeModel;
+    }
+
+    void InventoryWindow::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
+    {
+        if (MyGUI::InputManager::getInstance().getMouseFocusWidget() != sender)
+            return; 
+        
+        GuiMode mode = MWBase::Environment::get().getWindowManager()->getMode();
+
+        if (mode == GM_Container)
+        {
+            if (key == MyGUI::KeyCode::A)
+            {
+                
+            }
+        }
+
+        if (mode != GM_Inventory)
+            return; 
+
+        ItemModel* model = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).second;
+        int index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+        if (key == MyGUI::KeyCode::E)
+         {
+             MWBase::WindowManager *winMgr = MWBase::Environment::get().getWindowManager();
+             GuiMode mode = winMgr->getMode();
+             if (mode != GM_Inventory)
+                 return;
+
+             const ItemStack& item = model->getItem(index);
+             MWWorld::Ptr player = MWMechanics::getPlayer();
+
+             MWWorld::InventoryStore& invStore = player.getClass().getInventoryStore(player);
+
+             std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
+             MWBase::Environment::get().getWindowManager()->playSound(sound);
+             if (invStore.isEquipped(item.mBase))
+                 invStore.unequipItem(item.mBase, player);
+             else 
+                 useItem(item.mBase);
+
+             mItemView->update();
+         }
     }
 
     void InventoryWindow::onBackgroundSelected()

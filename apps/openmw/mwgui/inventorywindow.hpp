@@ -106,6 +106,7 @@ namespace MWGui
             void toggleMaximized();
             
             void onHeaderClicked(int sort);
+            void onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key);
             void onItemSelected(int index);
             void onItemSelectedFromSourceModel(int index);
 
