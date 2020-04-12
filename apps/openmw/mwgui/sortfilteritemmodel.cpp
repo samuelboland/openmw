@@ -298,7 +298,7 @@ namespace MWGui
         if (item.mFlags & ItemStack::Flag_Enchanted)
             category |= Category_Magic;
 
-        if (!(category & mCategory))
+        if (!(category & mCategory) && (mCategory != Category_Simple))
             return false;
 
         if (mFilter & Filter_OnlyIngredients)

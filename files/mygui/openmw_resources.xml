@@ -160,6 +160,22 @@
         </Widget>
     </Resource>
 
+    <Resource type="ResourceLayout" name="MW_ItemListHeader_Simple" version="3.2.0">
+        <Widget type="Widget" skin="" position="0 0 0 42" name="Root">
+            <Widget type="ImageBox" skin="MW_HLine" position="28 15 0 28" align="Stretch"/>
+            <Widget type="HBox" skin="SandBrightText" position="0 0 0 28" align="Left Top HStretch">
+                <Widget type="Button" position="0 0 28 20" align="Left Top" skin="SandBrightText">
+                    <Property key="TextAlign" value="Center VCenter" /> 
+                </Widget>
+                <Widget type="Button" skin="SandBrightText" position="0 0 150 28" name="Name" align="Left Top">
+                    <Property key="TextAlign" value="Left VCenter" /> 
+                    <Property key="Caption" value="Name"/>
+                </Widget>
+            </Widget>
+        </Widget>
+    </Resource>
+
+
     <Resource type="ResourceLayout" name="MW_ItemListHeader_All" version="3.2.0">
         <Widget type="Widget" skin="" position="0 0 0 42" name="Root">
             <Widget type="ImageBox" skin="MW_HLine" position="28 15 0 28" align="Stretch"/>

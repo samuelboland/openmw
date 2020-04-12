@@ -62,22 +62,26 @@ namespace MWGui
 
     void ItemListWidget::setItem(const ItemStack &item,int category)
     {
-        mName->setSize(0.50 * getWidth(), mName->getHeight());
         const std::string typeName = item.mBase.getClass().getTypeName();
 
-        // all filter views show these columns 
+        Gui::ButtonGroup group;
         createIcon(item, typeName);
         createName(item, typeName); 
-        createWeight(item, typeName);
-        createValue(item, typeName);
-        createRatio(item, typeName);
-
-        Gui::ButtonGroup group;
 
         group.push_back(mName);
-        group.push_back(mWeight);
-        group.push_back(mValue);
-        group.push_back(mRatio);
+        
+        if (category != MWGui::SortFilterItemModel::Category_Simple)
+        {
+            mName->setSize(0.60 * getWidth(), mName->getHeight());
+            createWeight(item, typeName);
+            createValue(item, typeName);
+            createRatio(item, typeName);
+            group.push_back(mWeight);
+            group.push_back(mValue);
+            group.push_back(mRatio);
+        }
+        else 
+            mName->setSize(getWidth(), mName->getHeight());
 
         if (category == MWGui::SortFilterItemModel::Category_Weapon)
         {

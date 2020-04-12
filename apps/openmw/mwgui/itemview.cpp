@@ -117,6 +117,8 @@ void ItemView::update()
         mHeader->changeWidgetSkin("MW_ItemListHeader_Weapon");
     else if (category == MWGui::SortFilterItemModel::Category_Armor)
         mHeader->changeWidgetSkin("MW_ItemListHeader_Armor");
+    else if (category == MWGui::SortFilterItemModel::Category_Simple)
+        mHeader->changeWidgetSkin("MW_ItemListHeader_Simple");
     else 
         mHeader->changeWidgetSkin("MW_ItemListHeader_All");
 

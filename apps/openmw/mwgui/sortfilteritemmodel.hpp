@@ -51,7 +51,8 @@ namespace MWGui
         static const int Category_Ingredient = (1<<8);
         static const int Category_Tool = (1<<9);
         static const int Category_Book = (1<<10);
-        static const int Category_All = (1<<11) - 1;
+        static const int Category_Simple = (1<<11);
+        static const int Category_All = (1<<12) - 1;
 
         static const int Filter_OnlyIngredients = (1<<0);
         static const int Filter_OnlyEnchanted = (1<<1);
