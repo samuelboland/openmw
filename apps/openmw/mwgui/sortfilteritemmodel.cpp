@@ -49,81 +49,73 @@ namespace
         return std::find(mapping.begin(), mapping.end(), type1) < std::find(mapping.begin(), mapping.end(), type2);
     }
 
-    struct CompareName
+    bool CompareName(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
     {
-        bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
-        {
-            std::string leftName = Misc::StringUtils::lowerCase(left.mBase.getClass().getName(left.mBase));
-            std::string rightName = Misc::StringUtils::lowerCase(right.mBase.getClass().getName(right.mBase));
+        if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
 
-            int result = leftName.compare(rightName);
-            if (result != 0)
-                return result < 0;
-            else 
-                return false;  
-        }
-    };
-    struct CompareValue 
-    {
-        bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
-        {
-            // compare items by value
-            return left.mBase.getClass().getValue(left.mBase) > right.mBase.getClass().getValue(right.mBase);
-        }
-    };
-    struct CompareWeight
-    {
-        bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
-        {
-            // compare items by weight
-            return (left.mBase.getClass().getWeight(left.mBase) * left.mCount) > (right.mBase.getClass().getWeight(right.mBase) * right.mCount);
-        }
-    };
-    struct CompareRatio
-    {
-        bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
-        {
-            float lw = left.mBase.getClass().getWeight(left.mBase); 
-            float lv =  left.mBase.getClass().getValue(left.mBase);
-            float rw = right.mBase.getClass().getWeight(right.mBase);
-            float rv = right.mBase.getClass().getValue(right.mBase);
-            
-            if (lw == 0)
-                return true; 
-            if (rw == 0)
-                return false; 
-            return (lv/lw) > (rv/rw);
-        }
-    };
+        std::string leftName = Misc::StringUtils::lowerCase(left.mBase.getClass().getName(left.mBase));
+        std::string rightName = Misc::StringUtils::lowerCase(right.mBase.getClass().getName(right.mBase));
+        int result = leftName.compare(rightName);
+        if (result != 0)
+            return result < 0;
+        else 
+            return false;  
+    }
 
-    struct CompareWeaponType 
+    bool CompareValue(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
     {
-        bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
-        {
-            int result = left.mBase.get<ESM::Weapon>()->mBase->mData.mType - right.mBase.get<ESM::Weapon>()->mBase->mData.mType;  
-            if (result != 0)
-                return result < 0;
-            else 
-                return false;  
-        }
-    };
+        if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
+        return left.mBase.getClass().getValue(left.mBase) > right.mBase.getClass().getValue(right.mBase);
+    }
 
-    struct CompareArmorType
+    bool CompareWeight(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
     {
-        bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
-        {
-            int result = left.mBase.getClass().getEquipmentSkill(left.mBase) - right.mBase.getClass().getEquipmentSkill(right.mBase);
-            if (result != 0)
-                return result > 0;
-            else 
-                return false;  
-        }
-    };
+        if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
+        return (left.mBase.getClass().getWeight(left.mBase) * left.mCount) > (right.mBase.getClass().getWeight(right.mBase) * right.mCount);
+    }
+
+    bool CompareRatio(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
+    {
+        if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
+
+        float lw = left.mBase.getClass().getWeight(left.mBase); 
+        float lv =  left.mBase.getClass().getValue(left.mBase);
+        float rw = right.mBase.getClass().getWeight(right.mBase);
+        float rv = right.mBase.getClass().getValue(right.mBase);
+        
+        if (lw == 0)
+            return true; 
+        if (rw == 0)
+            return false; 
+        return (lv/lw) > (rv/rw);
+    }
+
+    bool CompareWeaponType(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
+    {
+        if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
+
+        int result = left.mBase.get<ESM::Weapon>()->mBase->mData.mType - right.mBase.get<ESM::Weapon>()->mBase->mData.mType;  
+        if (result != 0)
+            return result < 0;
+        else 
+            return false;  
+    }
+
+    bool CompareArmorType(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
+    {
+        if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
+
+        int result = left.mBase.getClass().getEquipmentSkill(left.mBase) - right.mBase.getClass().getEquipmentSkill(right.mBase);
+        if (result != 0)
+            return result > 0;
+        else 
+            return false;  
+    }
 
     struct Compare
     {
         bool mSortByType;
-        Compare() : mSortByType(true) {}
+        Compare(bool sortByType) : mSortByType(sortByType) {}
         bool operator() (const MWGui::ItemStack& left, const MWGui::ItemStack& right)
         {
             if (mSortByType && left.mType != right.mType)
@@ -467,44 +459,64 @@ namespace MWGui
 
     void SortFilterItemModel::updateSort()
     {
-        if (mSort == Sort_Name)
+        switch(mSort)
         {
-            CompareName cmp;
-            std::sort(mItems.begin(), mItems.end(), cmp);
+            case Sort_Name:
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), CompareName);
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), CompareName);
+                break;
+            }
+            case Sort_Value:
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), CompareValue);
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), CompareValue);
+                break;
+            }   
+            case Sort_Weight:
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), CompareWeight);
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), CompareWeight);
+                break;
+            }
+            case Sort_Ratio:
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), CompareRatio);
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), CompareRatio);
+                break;
+            }
+            case Sort_WeaponType:
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), CompareWeaponType);
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), CompareWeaponType);
+                break;
+            }
+            case Sort_ArmorType:
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), CompareArmorType);
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), CompareArmorType);
+                break;
+            }
+            default: 
+            {
+                if (mIncreasing)
+                    std::sort(mItems.begin(), mItems.end(), Compare(mSortByType));
+                else 
+                    std::sort(mItems.rbegin(), mItems.rend(), Compare(mSortByType));
+            }
         }
-        else if (mSort == Sort_Value)
-        {
-            CompareValue cmp;
-            std::sort(mItems.begin(), mItems.end(), cmp);
-        }   
-        else if (mSort == Sort_Weight)
-        {
-            CompareWeight cmp;
-            std::sort(mItems.begin(), mItems.end(), cmp);
-        }
-        else if (mSort == Sort_Ratio)
-        {
-            CompareRatio cmp;
-            std::sort(mItems.begin(), mItems.end(), cmp);
-        }
-        else if (mSort == Sort_WeaponType)
-        {
-            CompareWeaponType cmp;
-            std::sort(mItems.begin(), mItems.end(), cmp);
-        }
-        else if (mSort == Sort_ArmorType)
-        {
-            CompareArmorType cmp;
-            std::sort(mItems.begin(), mItems.end(), cmp);
-        }
-        else 
-        {
-            Compare cmp;
-            cmp.mSortByType = mSortByType;
-            std::sort(mItems.begin(), mItems.end(), cmp);
-        }
-        if (!mIncreasing)
-            std::reverse(mItems.begin(), mItems.end());
     }
 
     void SortFilterItemModel::onClose()
