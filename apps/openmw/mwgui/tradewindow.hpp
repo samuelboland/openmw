@@ -3,6 +3,8 @@
 
 #include "../mwmechanics/trading.hpp"
 
+#include <components/widgets/imagepushbutton.hpp>
+
 #include "referenceinterface.hpp"
 #include "windowbase.hpp"
 
@@ -53,12 +55,17 @@ namespace MWGui
             static const float sBalanceChangeInitialPause; // in seconds
             static const float sBalanceChangeInterval; // in seconds
 
-            MyGUI::Button* mFilterAll;
-            MyGUI::Button* mFilterWeapon;
-            MyGUI::Button* mFilterApparel;
-            MyGUI::Button* mFilterMagic;
-            MyGUI::Button* mFilterMisc;
-
+            Gui::ImagePushButton* mAllButton;
+            Gui::ImagePushButton* mWeaponButton;
+            Gui::ImagePushButton* mArmorButton;
+            Gui::ImagePushButton* mClothButton;
+            Gui::ImagePushButton* mPotionButton;
+            Gui::ImagePushButton* mIngredientButton;
+            Gui::ImagePushButton* mBookButton;
+            Gui::ImagePushButton* mToolButton;
+            Gui::ImagePushButton* mMagicButton;
+            Gui::ImagePushButton* mMiscButton;
+            
             MyGUI::EditBox* mFilterEdit;
 
             MyGUI::Button* mIncreaseButton;

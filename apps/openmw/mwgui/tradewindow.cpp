@@ -53,11 +53,16 @@ namespace MWGui
         , mCurrentBalance(0)
         , mCurrentMerchantOffer(0)
     {
-        getWidget(mFilterAll, "AllButton");
-        getWidget(mFilterWeapon, "WeaponButton");
-        getWidget(mFilterApparel, "ApparelButton");
-        getWidget(mFilterMagic, "MagicButton");
-        getWidget(mFilterMisc, "MiscButton");
+        getWidget(mAllButton,"AllButton"); 
+        getWidget(mWeaponButton,"WeaponButton"); 
+        getWidget(mArmorButton,"ArmorButton"); 
+        getWidget(mClothButton,"ClothButton"); 
+        getWidget(mPotionButton,"PotionButton"); 
+        getWidget(mIngredientButton,"IngredientButton"); 
+        getWidget(mBookButton,"BookButton"); 
+        getWidget(mToolButton,"ToolButton"); 
+        getWidget(mMagicButton,"MagicButton"); 
+        getWidget(mMiscButton,"MiscButton"); 
 
         getWidget(mMaxSaleButton, "MaxSaleButton");
         getWidget(mCancelButton, "CancelButton");
@@ -74,15 +79,19 @@ namespace MWGui
         getWidget(mItemView, "ItemView");
         mItemView->eventItemClicked += MyGUI::newDelegate(this, &TradeWindow::onItemSelected);
         mItemView->getHeader()->eventItemClicked += MyGUI::newDelegate(this, &TradeWindow::onHeaderClicked);
+    
+        mAllButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mWeaponButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mArmorButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mClothButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mPotionButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mIngredientButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mBookButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mMiscButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mToolButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
+        mMagicButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
 
-        mFilterAll->setStateSelected(true);
-
-        mFilterAll->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
-        mFilterWeapon->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
-        mFilterApparel->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
-        mFilterMagic->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
-        mFilterMisc->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onFilterChanged);
-        mFilterEdit->eventEditTextChange += MyGUI::newDelegate(this, &TradeWindow::onNameFilterChanged);
+        mAllButton->setStateSelected(true);
 
         mCancelButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onCancelButtonClicked);
         mOfferButton->eventMouseButtonClick += MyGUI::newDelegate(this, &TradeWindow::onOfferButtonClicked);
@@ -137,7 +146,7 @@ namespace MWGui
 
         setTitle(actor.getClass().getName(actor));
 
-        onFilterChanged(mFilterAll);
+        onFilterChanged(mAllButton);
         mFilterEdit->setCaption("");
     }
 
@@ -160,26 +169,41 @@ namespace MWGui
 
     void TradeWindow::onFilterChanged(MyGUI::Widget* _sender)
     {
-        if (_sender == mFilterAll)
+        if (_sender == mAllButton)
             mSortModel->setCategory(SortFilterItemModel::Category_All);
-        else if (_sender == mFilterWeapon)
+        else if (_sender == mWeaponButton)
             mSortModel->setCategory(SortFilterItemModel::Category_Weapon);
-        else if (_sender == mFilterApparel)
-            mSortModel->setCategory(SortFilterItemModel::Category_Apparel);
-        else if (_sender == mFilterMagic)
+        else if (_sender == mArmorButton)
+            mSortModel->setCategory(SortFilterItemModel::Category_Armor);
+        else if (_sender == mClothButton)
+            mSortModel->setCategory(SortFilterItemModel::Category_Cloth);
+        else if (_sender == mPotionButton)
+            mSortModel->setCategory(SortFilterItemModel::Category_Potion);
+        else if (_sender == mIngredientButton)
+            mSortModel->setCategory(SortFilterItemModel::Category_Ingredient);
+        else if (_sender == mMagicButton)
             mSortModel->setCategory(SortFilterItemModel::Category_Magic);
-        else if (_sender == mFilterMisc)
+        else if (_sender == mBookButton)
+            mSortModel->setCategory(SortFilterItemModel::Category_Book);
+        else if (_sender == mToolButton)
+            mSortModel->setCategory(SortFilterItemModel::Category_Tool);
+        else if (_sender == mMiscButton)
             mSortModel->setCategory(SortFilterItemModel::Category_Misc);
 
-        mFilterAll->setStateSelected(false);
-        mFilterWeapon->setStateSelected(false);
-        mFilterApparel->setStateSelected(false);
-        mFilterMagic->setStateSelected(false);
-        mFilterMisc->setStateSelected(false);
-
-        _sender->castType<MyGUI::Button>()->setStateSelected(true);
+        mAllButton->setStateSelected(false);
+        mWeaponButton->setStateSelected(false);
+        mArmorButton->setStateSelected(false);
+        mClothButton->setStateSelected(false);
+        mPotionButton->setStateSelected(false);
+        mIngredientButton->setStateSelected(false);
+        mToolButton->setStateSelected(false);
+        mBookButton->setStateSelected(false);
+        mMagicButton->setStateSelected(false);
+        mMiscButton->setStateSelected(false);
 
         mItemView->update();
+
+        _sender->castType<Gui::ImagePushButton>()->setStateSelected(true);
     }
 
     int TradeWindow::getMerchantServices()
