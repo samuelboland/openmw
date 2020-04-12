@@ -109,7 +109,7 @@ namespace MWGui
         mMagicButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
 
         //mSortModel->setSort(SortFilterItemModel::Sort_Name);
-        //mFilterAll->setStateSelected(true);
+        mAllButton->setStateSelected(true);
 
         setGuiMode(mGuiMode);
     }
@@ -201,7 +201,7 @@ namespace MWGui
 
     void InventoryWindow::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
     {
-        if (MyGUI::InputManager::getInstance().getMouseFocusWidget() != sender)
+        if (MyGUI::InputManager::getInstance().getMouseFocusWidget() != sender || mDragAndDrop->mIsOnDragAndDrop)
             return; 
         
         GuiMode mode = MWBase::Environment::get().getWindowManager()->getMode();
@@ -512,20 +512,20 @@ namespace MWGui
         else if (_sender == mMiscButton)
             mSortModel->setCategory(SortFilterItemModel::Category_Misc);
 
-        //mAllButton->setStateSelected(true);
-        //mWeaponButton->setStateSelected(false);
-        //mArmorButton->setStateSelected(false);
-        //mClothButton->setStateSelected(false);
-        //mPotionButton->setStateSelected(false);
-        //mIngredientButton->setStateSelected(false);
-        //mToolButton->setStateSelected(false);
-        //mBookButton->setStateSelected(false);
-        //mMagicButton->setStateSelected(false);
-        //mMiscButton->setStateSelected(false);
+        mAllButton->setStateSelected(false);
+        mWeaponButton->setStateSelected(false);
+        mArmorButton->setStateSelected(false);
+        mClothButton->setStateSelected(false);
+        mPotionButton->setStateSelected(false);
+        mIngredientButton->setStateSelected(false);
+        mToolButton->setStateSelected(false);
+        mBookButton->setStateSelected(false);
+        mMagicButton->setStateSelected(false);
+        mMiscButton->setStateSelected(false);
 
         mItemView->update();
 
-        //_sender->castType<MyGUI::Button>()->setStateSelected(true);
+        _sender->castType<Gui::ImagePushButton>()->setStateSelected(true);
     }
 
     void InventoryWindow::onPinToggled()

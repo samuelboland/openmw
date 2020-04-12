@@ -11,7 +11,6 @@
 #include "../mwbase/environment.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
-#include "../mwbase/windowmanager.hpp"
 
 #include "../mwgui/quickkeysmenu.hpp"
 
@@ -23,10 +22,6 @@
 #include "../mwworld/inventorystore.hpp"
 #include "../mwworld/actionequip.hpp"
 #include "../mwworld/esmstore.hpp"
-
-#include "../mwbase/environment.hpp"
-#include "../mwbase/world.hpp"
-#include "../mwbase/mechanicsmanager.hpp"
 
 #include "itemview.hpp"
 
@@ -189,7 +184,7 @@ namespace MWGui
 
     void ItemListWidget::onMouseSetFocus(MyGUI::Widget *_old) 
     {
-        MWBase::Environment::get().getWindowManager()->playSound("Menu Click", 0.5, 1.1);
+        MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
         mName->setStateSelected(true);
         mOverlay->setVisible(true);

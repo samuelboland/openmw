@@ -4,7 +4,7 @@
 #include "windowpinnablebase.hpp"
 #include "mode.hpp"
 
-#include <components/widgets/imagebutton.hpp>
+#include <components/widgets/imagepushbutton.hpp>
 
 #include "../mwworld/ptr.hpp"
 #include "../mwrender/characterpreview.hpp"
@@ -81,16 +81,16 @@ namespace MWGui
             MyGUI::TextBox* mArmorRating;
             MyGUI::TextBox* mEncumbranceBar;
 
-            Gui::ImageButton* mAllButton;
-            Gui::ImageButton* mWeaponButton;
-            Gui::ImageButton* mArmorButton;
-            Gui::ImageButton* mClothButton;
-            Gui::ImageButton* mPotionButton;
-            Gui::ImageButton* mIngredientButton;
-            Gui::ImageButton* mBookButton;
-            Gui::ImageButton* mToolButton;
-            Gui::ImageButton* mMagicButton;
-            Gui::ImageButton* mMiscButton;
+            Gui::ImagePushButton* mAllButton;
+            Gui::ImagePushButton* mWeaponButton;
+            Gui::ImagePushButton* mArmorButton;
+            Gui::ImagePushButton* mClothButton;
+            Gui::ImagePushButton* mPotionButton;
+            Gui::ImagePushButton* mIngredientButton;
+            Gui::ImagePushButton* mBookButton;
+            Gui::ImagePushButton* mToolButton;
+            Gui::ImagePushButton* mMagicButton;
+            Gui::ImagePushButton* mMiscButton;
             
             MyGUI::EditBox* mFilterEdit;
 
