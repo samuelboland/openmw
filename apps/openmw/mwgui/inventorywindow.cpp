@@ -108,6 +108,8 @@ namespace MWGui
         mToolButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
         mMagicButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
 
+        mFilterEdit->eventEditTextChange += MyGUI::newDelegate(this, &InventoryWindow::onNameFilterChanged);
+
         mAllButton->setStateSelected(true);
 
         setGuiMode(mGuiMode);

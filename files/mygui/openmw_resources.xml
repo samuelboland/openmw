@@ -216,7 +216,7 @@
                     <Property key="Caption" value="Name"/>
                 </Widget>
                 <Widget type="Spacer" />
-                <Widget type="Button" skin="SandBrightText" position="0 0 120 28" name="WeaponType" align="Right Top">
+                <Widget type="Button" skin="SandBrightText" position="0 0 130 28" name="WeaponType" align="Right Top">
                     <Property key="TextAlign" value="Right VCenter" />
                     <Property key="Caption" value="Type"/>
                 </Widget>

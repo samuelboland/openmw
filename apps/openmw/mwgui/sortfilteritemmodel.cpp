@@ -22,8 +22,11 @@
 #include "../mwworld/class.hpp"
 #include "../mwworld/nullaction.hpp"
 #include "../mwworld/esmstore.hpp"
+#include "../mwworld/inventorystore.hpp"
 
 #include "../mwmechanics/alchemy.hpp"
+#include "../mwmechanics/actorutil.hpp"
+
 namespace
 {
     bool compareType(const std::string& type1, const std::string& type2)
@@ -52,6 +55,20 @@ namespace
     bool CompareName(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
     {
         if (left.mBase.isEmpty() || right.mBase.isEmpty()) return false;
+
+        MWWorld::Ptr player = MWMechanics::getPlayer();
+        MWWorld::InventoryStore& store = player.getClass().getInventoryStore(player);
+
+        // show barter items, then equipped items when sorting by name in ascending order
+        if (left.mType == MWGui::ItemStack::Type_Barter)
+            return true;
+        if (right.mType == MWGui::ItemStack::Type_Barter)
+            return false; 
+
+        if (store.isEquipped(right.mBase))
+            return true; 
+        if (store.isEquipped(left.mBase))
+            return false;
 
         std::string leftName = Misc::StringUtils::lowerCase(left.mBase.getClass().getName(left.mBase));
         std::string rightName = Misc::StringUtils::lowerCase(right.mBase.getClass().getName(right.mBase));

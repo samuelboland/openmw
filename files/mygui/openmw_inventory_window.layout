@@ -2,9 +2,10 @@
 
 <MyGUI type="Layout">
     <Widget type="Window" skin="MW_Window_Pinnable" layer="Windows" position="0 0 600 300" name="_Main">
-        <Property key="MinSize" value="40 40"/>
+        <Property key="MinSize" value="250 100"/>
+
         <!-- Categories -->
-        <Widget type="HBox" position="8 0 568 80" align="Left Top HStretch" name="Categories">
+        <Widget type="HBox" position="8 8 568 80" align="Left Top HStretch" name="Categories">
         <Widget type="Spacer" />
         <Widget type="Widget" position="0 0 75 60">
             <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="AllButton" align="HStretch">
@@ -32,9 +33,9 @@
         </Widget>
         <Widget type="Widget" position="0 0 75 60">
             <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="ClothButton" align="HStretch">
-                <Property key="ImageHighlighted" value="textures\ui\all_over.dds"/>
-                <Property key="ImageNormal" value="textures\ui\all_idle.dds"/>
-                <Property key="ImagePushed" value="textures\ui\all_pressed.dds"/>
+                <Property key="ImageHighlighted" value="textures\ui\cloth_over.dds"/>
+                <Property key="ImageNormal" value="textures\ui\cloth_idle.dds"/>
+                <Property key="ImagePushed" value="textures\ui\cloth_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
         </Widget>
@@ -89,19 +90,20 @@
         <Widget type="Spacer" />
         </Widget>
 
-        <!-- Search box-->
-        <Widget type="EditBox" skin="MW_TextBoxEditWithBorder" position="468 8 100 23" name="FilterEdit" align="Top Right">
-            <UserString key="HStretch" value="true"/>
-            <UserString key="AcceptTab" value="true"/>
-            <Property key="Visible" value="false"/>
-        </Widget>
-
         <!-- Inventory list -->
-        <Widget type="ItemView" skin="MW_ItemView" position="8 80 580 140" align="Stretch" name="ItemView"/>
+        <Widget type="ItemView" skin="MW_ItemView" position="8 90 580 100" align="Stretch" name="ItemView"/>
+
+        <!-- Search box-->
+        <Widget type="HBox" position="8 200 572 23" align="Bottom HStretch">
+            <Widget type="Spacer"/>
+            <Widget type="EditBox" skin="MW_TextBoxEdit" position="0 0 200 23" name="FilterEdit" align="Bottom Right">
+                <UserString key="AcceptTab" value="true"/>
+                <Property key="Visible" value="true"/>
+            </Widget>
+        </Widget>
 
         <!-- Bottom bar -->
         <Widget type ="HBox" position="8 230 568 28" align="Right Bottom HStretch">
-            
             <!-- Player armor -->
             <Widget type="ImageBox" skin="ImageBox" position="2 2 16 16" align="Left Top">
                 <Property key="NeedMouse" value="false"/>
