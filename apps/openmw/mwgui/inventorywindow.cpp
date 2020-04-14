@@ -206,6 +206,7 @@ namespace MWGui
             widget = mCategories->getChildAt(i);
             widget->setCoord(MyGUI::IntCoord(mCategories->getChildAt(i-1)->getLeft()+width+padding,widget->getTop(),width,width));
         }
+        updatePreviewSize();
     }
 
     void InventoryWindow::updatePlayer()
@@ -527,7 +528,7 @@ namespace MWGui
     }
 
     void InventoryWindow::onOpen()
-    {
+    {   
         // Reset the filter focus when opening the window
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)
@@ -539,6 +540,19 @@ namespace MWGui
             mItemView->update();
             notifyContentChanged();
         }
+
+        if (MWBase::Environment::get().getWindowManager()->getMode() != GM_Inventory)
+        {
+            mLeftPane->setVisible(false);
+            mToggleAvatar->setVisible(false);
+        }
+        else 
+        {
+            std::string setting = getModeSetting();
+            mLeftPane->setVisible(Settings::Manager::getBool(setting + " avatar", "Windows"));
+            mToggleAvatar->setVisible(true);
+        }
+
         adjustPanes();
     }
 
