@@ -64,6 +64,7 @@ namespace MWGui
         , mGuiMode(GM_Inventory)
         , mLastXSize(0)
         , mLastYSize(0)
+        , mPreview(new MWRender::InventoryPreview(parent, resourceSystem, MWMechanics::getPlayer()))
         , mTrading(false)
         , mScaleFactor(1.0f)
         , mUpdateTimer(0.f)
@@ -72,7 +73,17 @@ namespace MWGui
         if (uiScale > 1.0)
             mScaleFactor = uiScale;
 
+        mPreviewTexture.reset(new osgMyGUI::OSGTexture(mPreview->getTexture()));
+        mPreview->rebuild();
+
         mMainWidget->castType<MyGUI::Window>()->eventWindowChangeCoord += MyGUI::newDelegate(this, &InventoryWindow::onWindowResize);
+
+        getWidget(mAvatar, "Avatar");
+        getWidget(mAvatarImage, "AvatarImage");
+        getWidget(mToggleAvatar,"ToggleAvatar"); 
+
+        getWidget(mLeftPane, "LeftPane");
+        getWidget(mRightPane, "RightPane");
 
         getWidget(mAllButton,"AllButton"); 
         getWidget(mWeaponButton,"WeaponButton"); 
@@ -85,10 +96,20 @@ namespace MWGui
         getWidget(mMagicButton,"MagicButton"); 
         getWidget(mMiscButton,"MiscButton"); 
 
+        getWidget(mCategories,"Categories"); 
+
         getWidget(mEncumbranceBar, "EncumbranceBar");
         getWidget(mArmorRating, "ArmorRating");
         getWidget(mPlayerGold, "PlayerGold"); 
         getWidget(mFilterEdit, "FilterEdit");
+
+        mAvatarImage->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onAvatarClicked);
+        mAvatarImage->eventMouseButtonPressed += MyGUI::newDelegate(this, &InventoryWindow::onDragStart);
+        mAvatarImage->eventMouseDrag += MyGUI::newDelegate(this, &InventoryWindow::onMouseDrag);
+        mAvatarImage->setRenderItemTexture(mPreviewTexture.get());
+        mAvatarImage->getSubWidgetMain()->_setUVSet(MyGUI::FloatRect(0.f, 0.f, 1.f, 1.f));
+
+        mToggleAvatar->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onAvatarToggled);
 
         getWidget(mItemView, "ItemView");
 
@@ -113,6 +134,82 @@ namespace MWGui
         mAllButton->setStateSelected(true);
 
         setGuiMode(mGuiMode);
+        mLeftPane->setVisible(false);
+        adjustPanes();
+    }
+
+    void InventoryWindow::onDragStart(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
+    {
+        if (_id!=MyGUI::MouseButton::Left) return;
+        mLastDragPos = MyGUI::IntPoint(_left, _top);
+    }
+
+    void InventoryWindow::onMouseDrag(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
+    {
+        if (_id != MyGUI::MouseButton::Left) return;
+        
+        MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
+
+        static int position = 1000;
+
+        if (position > 1000)
+            position = 0;
+        else if (position < 0)
+            position = 1000;
+        else 
+        {
+            if (_left < mLastDragPos.left)
+                position -= 5;
+            else if (_left > mLastDragPos.left)
+                position += 5;
+        }
+
+        float angle = (float(position) / (1000) - 0.5f) * osg::PI * 2;
+
+        mPreview->setAngle(angle);
+        dirtyPreview();
+        
+        mLastDragPos = MyGUI::IntPoint(_left, _top);
+    }
+
+    void InventoryWindow::adjustPanes()
+    {
+        const float aspect = 0.5; // fixed aspect ratio for the avatar image
+        int leftPaneWidth = static_cast<int>((mMainWidget->getSize().height - 44) * aspect);
+        if (!mLeftPane->getVisible())
+            leftPaneWidth = 0;
+
+        mLeftPane->setSize( leftPaneWidth, mMainWidget->getSize().height-12);
+        mRightPane->setCoord( mLeftPane->getPosition().left + leftPaneWidth + 4,
+                              mRightPane->getPosition().top,
+                              mMainWidget->getSize().width - leftPaneWidth,
+                              mMainWidget->getSize().height);
+
+        static constexpr int minPadding = 12;
+        static constexpr int maxPadding = 23; 
+        static constexpr int maxSize = 52; 
+        static constexpr int minSize = 24;
+        static constexpr int minMargin = 6;
+        
+        mCategories->setSize(mRightPane->getWidth()-70, mCategories->getHeight());
+
+        int count = mCategories->getChildCount();
+        
+        int padding = 18;
+
+        int width = std::min(maxSize,std::max(static_cast<int>(((mCategories->getWidth()-(2*minMargin)-(padding*count)) / static_cast<float>(count))), minSize));
+        int sidemargin = ((mCategories->getWidth() - ((width+padding) * count))/2) + 8; 
+        
+        if (sidemargin < 0)
+            sidemargin = minMargin;
+
+        MyGUI::Widget* widget = mCategories->getChildAt(0);
+        widget->setCoord(MyGUI::IntCoord(sidemargin,widget->getTop(),width,width));
+        for (size_t i = 1; i < count; i++)
+        {
+            widget = mCategories->getChildAt(i);
+            widget->setCoord(MyGUI::IntCoord(mCategories->getChildAt(i-1)->getLeft()+width+padding,widget->getTop(),width,width));
+        }
     }
 
     void InventoryWindow::updatePlayer()
@@ -164,6 +261,8 @@ namespace MWGui
         else
             Settings::Manager::setBool(setting + " maximized", "Windows", maximized);
 
+        adjustPanes();
+        updatePreviewSize();
     }
 
     void InventoryWindow::setGuiMode(GuiMode mode)
@@ -180,9 +279,25 @@ namespace MWGui
                             static_cast<int>(Settings::Manager::getFloat(setting + " y", "Windows") * viewSize.height));
         MyGUI::IntSize size(static_cast<int>(Settings::Manager::getFloat(setting + " w", "Windows") * viewSize.width),
                             static_cast<int>(Settings::Manager::getFloat(setting + " h", "Windows") * viewSize.height));
+        
+        bool needUpdate = (size.width != mMainWidget->getWidth() || size.height != mMainWidget->getHeight());
 
         mMainWidget->setPosition(pos);
         mMainWidget->setSize(size);
+
+        adjustPanes();
+
+        if (needUpdate)
+            updatePreviewSize();
+    }
+
+    void InventoryWindow::onAvatarToggled(MyGUI::Widget* _sender)
+    {
+        if (mLeftPane->getVisible())
+            mLeftPane->setVisible(false);
+        else
+            mLeftPane->setVisible(true);
+        adjustPanes();
     }
 
     SortFilterItemModel* InventoryWindow::getSortFilterModel()
@@ -206,41 +321,15 @@ namespace MWGui
             return; 
         
         GuiMode mode = MWBase::Environment::get().getWindowManager()->getMode();
-
-        if (mode == GM_Container)
-        {
-            if (key == MyGUI::KeyCode::A)
-            {
-                
-            }
-        }
-
         if (mode != GM_Inventory)
             return; 
 
-        ItemModel* model = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).second;
         int index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
-        if (key == MyGUI::KeyCode::E)
-         {
-             MWBase::WindowManager *winMgr = MWBase::Environment::get().getWindowManager();
-             GuiMode mode = winMgr->getMode();
-             if (mode != GM_Inventory)
-                 return;
-
-             const ItemStack& item = model->getItem(index);
-             MWWorld::Ptr player = MWMechanics::getPlayer();
-
-             MWWorld::InventoryStore& invStore = player.getClass().getInventoryStore(player);
-
-             std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
-             MWBase::Environment::get().getWindowManager()->playSound(sound);
-             if (invStore.isEquipped(item.mBase))
-                 invStore.unequipItem(item.mBase, player);
-             else 
-                 useItem(item.mBase);
-
-             mItemView->update();
-         }
+        if (key == MyGUI::KeyCode::X)
+        {
+            mDrop = true; 
+            onItemSelected(index);
+        }
     }
 
     void InventoryWindow::onBackgroundSelected()
@@ -252,6 +341,34 @@ namespace MWGui
     void InventoryWindow::onItemSelected (int index)
     {
         onItemSelectedFromSourceModel (mSortModel->mapToSource(index));
+    }
+
+    void InventoryWindow::onToggleItem(MyGUI::Widget* sender, int count)
+    {
+        auto item = mTradeModel->getItem(mSelectedItem);
+
+        if (item.mBase.isEmpty()) return;
+
+        if (mDrop)
+        {
+            mDrop = false; 
+            dragItem(sender, count);
+            return;
+        }
+
+        MWWorld::Ptr player = MWMechanics::getPlayer();
+        MWWorld::InventoryStore& invStore = player.getClass().getInventoryStore(player);
+
+        std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
+        MWBase::Environment::get().getWindowManager()->playSound(sound);
+
+        if (invStore.isEquipped(item.mBase))
+            invStore.unequipItem(item.mBase, player);
+        else 
+            useItem(item.mBase);
+
+        mItemView->update();
+        notifyContentChanged();
     }
 
     void InventoryWindow::onItemSelectedFromSourceModel (int index)
@@ -315,7 +432,7 @@ namespace MWGui
             if (mTrading)
                 dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::sellItem);
             else
-                dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::dragItem);
+                dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::onToggleItem);
             mSelectedItem = index;
         }
         else
@@ -324,7 +441,7 @@ namespace MWGui
             if (mTrading)
                 sellItem (nullptr, count);
             else
-                dragItem (nullptr, count);
+                onToggleItem (nullptr, count);
         }
     }
 
@@ -414,6 +531,7 @@ namespace MWGui
             mItemView->update();
             notifyContentChanged();
         }
+        adjustPanes();
     }
 
     std::string InventoryWindow::getModeSetting() const
@@ -439,6 +557,7 @@ namespace MWGui
 
     void InventoryWindow::onWindowResize(MyGUI::Window* _sender)
     {
+        adjustPanes();
         std::string setting = getModeSetting();
 
         MyGUI::IntSize viewSize = MyGUI::RenderManager::getInstance().getViewSize();
@@ -461,6 +580,92 @@ namespace MWGui
 
             updateArmorRating();
         }
+    }
+    
+    void InventoryWindow::onAvatarClicked(MyGUI::Widget* _sender)
+    {
+        if (mDragAndDrop->mIsOnDragAndDrop)
+        {
+            MWWorld::Ptr ptr = mDragAndDrop->mItem.mBase;
+
+            mDragAndDrop->finish();
+
+            if (mDragAndDrop->mSourceModel != mTradeModel)
+            {
+                // Move item to the player's inventory
+                ptr = mDragAndDrop->mSourceModel->moveItem(mDragAndDrop->mItem, mDragAndDrop->mDraggedCount, mTradeModel);
+            }
+
+            useItem(ptr);
+
+            // If item is ingredient or potion don't stop drag and drop to simplify action of taking more than one 1 item
+            if ((ptr.getTypeName() == typeid(ESM::Potion).name() ||
+                 ptr.getTypeName() == typeid(ESM::Ingredient).name())
+                && mDragAndDrop->mDraggedCount > 1)
+            {
+                // Item can be provided from other window for example container.
+                // But after DragAndDrop::startDrag item automaticly always gets to player inventory.
+                mSelectedItem = getModel()->getIndex(mDragAndDrop->mItem);
+                dragItem(nullptr, mDragAndDrop->mDraggedCount - 1);
+            }
+        }
+        else
+        {
+            MyGUI::IntPoint mousePos = MyGUI::InputManager::getInstance ().getLastPressedPosition (MyGUI::MouseButton::Left);
+            MyGUI::IntPoint relPos = mousePos - mAvatarImage->getAbsolutePosition ();
+
+            MWWorld::Ptr itemSelected = getAvatarSelectedItem (relPos.left, relPos.top);
+            if (itemSelected.isEmpty ())
+                return;
+
+            for (size_t i=0; i < mTradeModel->getItemCount (); ++i)
+            {
+                if (mTradeModel->getItem(i).mBase == itemSelected)
+                {
+                    mDrop = true;
+                    onItemSelectedFromSourceModel(i);
+                    return;
+                }
+            }
+            throw std::runtime_error("Can't find clicked item");
+        }
+    }
+
+    MWWorld::Ptr InventoryWindow::getAvatarSelectedItem(int x, int y)
+    {
+        // convert to OpenGL lower-left origin
+        y = (mAvatarImage->getHeight()-1) - y;
+
+        // Scale coordinates
+        x = int(x*mScaleFactor);
+        y = int(y*mScaleFactor);
+
+        int slot = mPreview->getSlotSelected (x, y);
+
+        if (slot == -1)
+            return MWWorld::Ptr();
+
+        MWWorld::InventoryStore& invStore = mPtr.getClass().getInventoryStore(mPtr);
+        if(invStore.getSlot(slot) != invStore.end())
+        {
+            MWWorld::Ptr item = *invStore.getSlot(slot);
+            if (!item.getClass().showsInInventory(item))
+                return MWWorld::Ptr();
+            return item;
+        }
+
+        return MWWorld::Ptr();
+    }
+
+    void InventoryWindow::updatePreviewSize()
+    {
+        MyGUI::IntSize size = mAvatarImage->getSize();
+        int width = std::min(mPreview->getTextureWidth(), size.width);
+        int height = std::min(mPreview->getTextureHeight(), size.height);
+        mPreview->setViewport(int(width*mScaleFactor), int(height*mScaleFactor));
+
+        mAvatarImage->getSubWidgetMain()->_setUVSet(MyGUI::FloatRect(0.f, 0.f,
+                                                                     width*mScaleFactor/float(mPreview->getTextureWidth()), height*mScaleFactor/float(mPreview->getTextureHeight())));
     }
 
     void InventoryWindow::updateArmorRating()
@@ -652,6 +857,8 @@ namespace MWGui
 
     void InventoryWindow::dirtyPreview()
     {
+        mPreview->update();
+
         updateArmorRating();
         updatePlayerGold();
         updateEncumbranceBar();

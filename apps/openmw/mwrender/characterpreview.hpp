@@ -69,13 +69,14 @@ namespace MWRender
         int mSizeX;
         int mSizeY;
     };
+    
+    class UpdateCameraCallback;
 
     class InventoryPreview : public CharacterPreview
     {
     public:
 
         InventoryPreview(osg::Group* parent, Resource::ResourceSystem* resourceSystem, const MWWorld::Ptr& character);
-
         void updatePtr(const MWWorld::Ptr& ptr);
 
         void update(); // Render preview again, e.g. after changed equipment
@@ -83,13 +84,13 @@ namespace MWRender
 
         int getSlotSelected(int posX, int posY);
 
+        void setAngle(float angleRadians);
+
     protected:
         osg::ref_ptr<osg::Viewport> mViewport;
 
         virtual void onSetup();
     };
-
-    class UpdateCameraCallback;
 
     class RaceSelectionPreview : public CharacterPreview
     {

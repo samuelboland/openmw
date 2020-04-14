@@ -1,100 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <MyGUI type="Layout">
-    <Widget type="Window" skin="MW_Window_Pinnable" layer="Windows" position="0 0 600 300" name="_Main">
+    <Widget type="Window" skin="MW_Window_Pinnable" layer="Windows" position="0 0 800 300" name="_Main">
         <Property key="MinSize" value="250 100"/>
+    
+    <Widget type="Widget" skin="" position="0 0 212 300" align="Stretch" name="LeftPane">
+        <Widget type="Widget" skin="" position="0 0 206 300" align="Stretch" name="Avatar">
+            <Widget type="ImageBox" skin="ImageBox" position="3 3 206 300" align="Stretch" name="AvatarImage">
+                <UserString key="ToolTipType" value="AvatarItemSelection"/>
+                <Property key="NeedMouse" value="true"/>
+            </Widget>
+        </Widget>
+=    </Widget>
 
+    <Widget type="Widget" skin="" position="232 0 568 300" align="Stretch" name="RightPane">
         <!-- Categories -->
-        <Widget type="HBox" position="8 8 568 80" align="Left Top HStretch" name="Categories">
-        <Widget type="Spacer" />
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="AllButton" align="HStretch">
+        <Widget type="Widget" skin="" position="8 8 500 80" align="Left Top" name="Categories">
+            <Widget type="ImagePushButton" skin="ImageBox" name="AllButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\all_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\all_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\all_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="WeaponButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="WeaponButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\weapon_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\weapon_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\weapon_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="ArmorButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="ArmorButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\armor_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\armor_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\armor_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="ClothButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="ClothButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\cloth_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\cloth_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\cloth_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="PotionButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="PotionButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\potion_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\potion_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\potion_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="IngredientButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="IngredientButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\ingredient_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\ingredient_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\ingredient_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="MagicButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="MagicButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\magic_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\magic_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\magic_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="BookButton">
+            <Widget type="ImagePushButton" skin="ImageBox" name="BookButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\book_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\book_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\book_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 75 60">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="ToolButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="ToolButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\tool_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\tool_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\tool_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
-        </Widget>
-        <Widget type="Widget" position="0 0 52 52">
-            <Widget type="ImagePushButton" skin="ImageBox" position="0 0 52 52" name="MiscButton" align="HStretch">
+            <Widget type="ImagePushButton" skin="ImageBox" name="MiscButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\misc_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\misc_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\misc_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
             </Widget>
         </Widget>
-        <Widget type="Spacer" />
-        </Widget>
 
         <!-- Inventory list -->
-        <Widget type="ItemView" skin="MW_ItemView" position="8 90 580 100" align="Stretch" name="ItemView"/>
+        <Widget type="ItemView" skin="MW_ItemView" position="8 90 545 100" align="Stretch" name="ItemView">
+            <Widget type="ImagePushButton" skin="ImageBox" position="4 6 20 20" align="Top Left" name="ToggleAvatar">
+                <Property key="ImageHighlighted" value="textures\ui\toggle_over.dds"/>
+                <Property key="ImageNormal" value="textures\ui\toggle_idle.dds"/>
+                <Property key="ImagePushed" value="textures\ui\toggle_pressed.dds"/>
+                <Property key="NeedKey" value="false"/>
+            </Widget>
+        </Widget>
 
         <!-- Search box-->
-        <Widget type="HBox" position="8 200 572 23" align="Bottom HStretch">
+        <Widget type="HBox" position="8 200 545 23" align="Bottom HStretch">
             <Widget type="Spacer"/>
             <Widget type="EditBox" skin="MW_TextBoxEdit" position="0 0 200 23" name="FilterEdit" align="Bottom Right">
                 <UserString key="AcceptTab" value="true"/>
@@ -103,7 +98,7 @@
         </Widget>
 
         <!-- Bottom bar -->
-        <Widget type ="HBox" position="8 230 568 28" align="Right Bottom HStretch">
+        <Widget type ="HBox" position="8 230 530 28" align="Right Bottom HStretch">
             <!-- Player armor -->
             <Widget type="ImageBox" skin="ImageBox" position="2 2 16 16" align="Left Top">
                 <Property key="NeedMouse" value="false"/>
@@ -139,7 +134,7 @@
                     <Property key="NeedMouse" value="false"/>
                     <Property key="TextAlign" value="Left" />
             </Widget>
-
+        </Widget>
         </Widget>
     </Widget>
 </MyGUI>

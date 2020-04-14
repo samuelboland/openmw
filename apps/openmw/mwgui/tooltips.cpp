@@ -210,6 +210,16 @@ namespace MWGui
                 {
                     tooltipSize = createToolTip(*focus->getUserData<MWGui::ToolTipInfo>());
                 }
+                else if (type == "AvatarItemSelection")
+                {
+                    MyGUI::IntCoord avatarPos = focus->getAbsoluteCoord();
+                    MyGUI::IntPoint relMousePos = MyGUI::InputManager::getInstance ().getMousePosition () - MyGUI::IntPoint(avatarPos.left, avatarPos.top);
+                    MWWorld::Ptr item = winMgr->getInventoryWindow ()->getAvatarSelectedItem (relMousePos.left, relMousePos.top);
+
+                    mFocusObject = item;
+                    if (!mFocusObject.isEmpty ())
+                        tooltipSize = getToolTipViaPtr(mFocusObject.getRefData().getCount(), false);
+                }
                 else if (type == "Spell")
                 {
                     ToolTipInfo info;
