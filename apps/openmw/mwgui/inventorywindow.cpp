@@ -298,6 +298,7 @@ namespace MWGui
         else
             mLeftPane->setVisible(true);
         adjustPanes();
+        adjustPanes();
     }
 
     SortFilterItemModel* InventoryWindow::getSortFilterModel()
