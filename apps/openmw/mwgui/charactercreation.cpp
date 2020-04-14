@@ -442,7 +442,7 @@ namespace MWGui
                     data.mHair
                 );
             }
-            //MWBase::Environment::get().getWindowManager()->getInventoryWindow()->rebuildAvatar();
+            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->rebuildAvatar();
             
             MWBase::Environment::get().getWindowManager()->removeDialog(mRaceDialog);
             mRaceDialog = 0;

@@ -222,6 +222,10 @@ namespace MWGui
 
         mItemView->setModel(mSortModel);
 
+        mPreview->updatePtr(mPtr);
+        mPreview->rebuild();
+        mPreview->update();
+
         dirtyPreview();
 
         mItemView->update();
@@ -581,7 +585,8 @@ namespace MWGui
         {
             mLastXSize = mMainWidget->getSize().width;
             mLastYSize = mMainWidget->getSize().height;
-
+            
+            updatePreviewSize();
             updateArmorRating();
         }
     }
@@ -995,5 +1000,10 @@ namespace MWGui
             return;
 
         useItem(model.getItem(cycled).mBase);
+    }
+
+    void InventoryWindow::rebuildAvatar()
+    {
+        mPreview->rebuild();
     }
 }

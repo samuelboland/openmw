@@ -16,6 +16,8 @@
 
 #include "../mwscript/interpretercontext.hpp"
 
+#include "../mwgui/inventorywindow.hpp"
+
 #include "countdialog.hpp"
 #include "inventorywindow.hpp"
 
