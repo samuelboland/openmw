@@ -344,8 +344,6 @@ namespace MWRender
 
         setBlendMode();
 
-        //MWBase::Environment::get().getMechanicsManager()->playAnimationGroup (mCharacter, "idle2", Animation::BlendMask_All, std::numeric_limits<int>::max(), true);
-
         redraw();
     }
 
@@ -398,8 +396,7 @@ namespace MWRender
 
     void InventoryPreview::setAngle(float angleRadians)
     {
-        mNode->setAttitude(osg::Quat(0.f, osg::Vec3(1,0,0))
-                * osg::Quat(angleRadians, osg::Vec3(0,0,1)));
+        mNode->setAttitude(osg::Quat(angleRadians, osg::Vec3(0,0,1)));
         redraw();
     }
 

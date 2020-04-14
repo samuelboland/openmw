@@ -134,7 +134,11 @@ namespace MWGui
         mAllButton->setStateSelected(true);
 
         setGuiMode(mGuiMode);
-        mLeftPane->setVisible(false);
+
+        std::string setting = getModeSetting();
+        bool showAvatar = Settings::Manager::getBool(setting + " avatar", "Windows");
+
+        mLeftPane->setVisible(showAvatar);
         adjustPanes();
     }
 
@@ -150,23 +154,15 @@ namespace MWGui
         
         MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
 
-        static int position = 1000;
+        static int angle = 0;
 
-        if (position > 1000)
-            position = 0;
-        else if (position < 0)
-            position = 1000;
-        else 
-        {
-            if (_left < mLastDragPos.left)
-                position -= 5;
-            else if (_left > mLastDragPos.left)
-                position += 5;
-        }
+        if (_left < mLastDragPos.left)
+            angle -= 1;
+        else if (_left > mLastDragPos.left)
+            angle += 1;
 
-        float angle = (float(position) / (1000) - 0.5f) * osg::PI * 2;
-
-        mPreview->setAngle(angle);
+        mPreview->setAngle(osg::DegreesToRadians(static_cast<float>(angle)));
+        angle %= 360;
         dirtyPreview();
         
         mLastDragPos = MyGUI::IntPoint(_left, _top);
@@ -293,10 +289,17 @@ namespace MWGui
 
     void InventoryWindow::onAvatarToggled(MyGUI::Widget* _sender)
     {
+        std::string setting = getModeSetting();
+        bool show = false; 
         if (mLeftPane->getVisible())
             mLeftPane->setVisible(false);
         else
+        {
+            show = true;
             mLeftPane->setVisible(true);
+        }
+
+        Settings::Manager::setBool(setting + " avatar", "Windows", show);
         adjustPanes();
         adjustPanes();
     }
