@@ -15,7 +15,14 @@
 
     <Widget type="Widget" skin="" position="232 0 568 300" align="Stretch" name="RightPane">
         <!-- Categories -->
-        <Widget type="Widget" skin="" position="8 8 500 80" align="Left Top" name="Categories">
+        <Widget type="Widget" skin="" position="8 8 540 80" align="Left Top HStretch" name="Categories">
+
+            <UserString key="MaxSize" value="52"/>
+            <UserString key="MaxPadding" value="23"/>
+            <UserString key="MinMargin" value="6"/>
+            <UserString key="MinSize" value="24"/>
+            <UserString key="Padding" value="18"/>
+
             <Widget type="ImagePushButton" skin="ImageBox" name="AllButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\all_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\all_idle.dds"/>

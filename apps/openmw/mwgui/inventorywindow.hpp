@@ -59,6 +59,8 @@ namespace MWGui
 
             void updatePlayer();
 
+            void adjustCategoryHeader();
+
             void clear();
 
             void useItem(const MWWorld::Ptr& ptr, bool force=false);
@@ -119,7 +121,7 @@ namespace MWGui
             MyGUI::Widget* mRightPane;
 
             std::unique_ptr<MyGUI::ITexture> mPreviewTexture;
-            std::unique_ptr<MWRender::InventoryPreview> mPreview;\
+            std::unique_ptr<MWRender::InventoryPreview> mPreview;
 
             MyGUI::IntPoint mLastDragPos;
 

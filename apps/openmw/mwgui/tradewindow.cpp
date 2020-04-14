@@ -1,5 +1,6 @@
 #include "tradewindow.hpp"
 
+#include <MyGUI_Window.h>
 #include <MyGUI_Button.h>
 #include <MyGUI_InputManager.h>
 #include <MyGUI_ControllerManager.h>
@@ -76,6 +77,8 @@ namespace MWGui
         getWidget(mBottomPane, "BottomPane");
         getWidget(mFilterEdit, "FilterEdit");
 
+        getWidget(mCategories,"Categories"); 
+
         getWidget(mItemView, "ItemView");
         mItemView->eventItemClicked += MyGUI::newDelegate(this, &TradeWindow::onItemSelected);
         mItemView->getHeader()->eventItemClicked += MyGUI::newDelegate(this, &TradeWindow::onHeaderClicked);
@@ -106,6 +109,7 @@ namespace MWGui
         mTotalBalance->setMinValue(std::numeric_limits<int>::min()+1); // disallow INT_MIN since abs(INT_MIN) is undefined
 
         setCoord(400, 0, 400, 300);
+        adjustCategoryHeader();
     }
 
     void TradeWindow::restock()
@@ -153,6 +157,7 @@ namespace MWGui
     void TradeWindow::onFrame(float dt)
     {
         checkReferenceAvailable();
+        adjustCategoryHeader();
     }
 
     void TradeWindow::onHeaderClicked(int sort)
@@ -204,6 +209,7 @@ namespace MWGui
         mItemView->update();
 
         _sender->castType<Gui::ImagePushButton>()->setStateSelected(true);
+        adjustCategoryHeader();
     }
 
     int TradeWindow::getMerchantServices()
@@ -394,6 +400,32 @@ namespace MWGui
         MWBase::Environment::get().getWindowManager()->removeGuiMode(GM_Barter);
 
         restock();
+    }
+
+    void TradeWindow::adjustCategoryHeader()
+    {
+        static int maxPadding = MyGUI::utility::parseInt(mCategories->getUserString("MaxPadding"));
+        static int maxSize = MyGUI::utility::parseInt(mCategories->getUserString("MaxSize"));
+        static int minMargin = MyGUI::utility::parseInt(mCategories->getUserString("MinMargin"));
+        static int minSize = MyGUI::utility::parseInt(mCategories->getUserString("MinSize"));
+        static int padding = MyGUI::utility::parseInt(mCategories->getUserString("Padding"));
+        
+        int count = mCategories->getChildCount();
+
+        int width = std::min(maxSize,std::max(static_cast<int>(((mCategories->getWidth()-(2*minMargin)-(padding*count)) / static_cast<float>(count))), minSize));
+        int sidemargin = ((mCategories->getWidth() - ((width+padding) * count))/2) + 8; 
+        
+        if (sidemargin < 0)
+            sidemargin = minMargin;
+
+        MyGUI::Widget* widget = mCategories->getChildAt(0);
+        int top = (mCategories->getHeight()-width)/2;
+        widget->setCoord(MyGUI::IntCoord(sidemargin,top,width,width));
+        for (int i = 1; i < count; i++)
+        {
+            widget = mCategories->getChildAt(i);
+            widget->setCoord(MyGUI::IntCoord(mCategories->getChildAt(i-1)->getLeft()+width+padding,top,width,width));
+        }
     }
 
     void TradeWindow::onAccept(MyGUI::EditBox *sender)

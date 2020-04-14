@@ -168,30 +168,15 @@ namespace MWGui
         mLastDragPos = MyGUI::IntPoint(_left, _top);
     }
 
-    void InventoryWindow::adjustPanes()
+    void InventoryWindow::adjustCategoryHeader()
     {
-        const float aspect = 0.5; // fixed aspect ratio for the avatar image
-        int leftPaneWidth = static_cast<int>((mMainWidget->getSize().height - 44) * aspect);
-        if (!mLeftPane->getVisible())
-            leftPaneWidth = 0;
-
-        mLeftPane->setSize( leftPaneWidth, mMainWidget->getSize().height-12);
-        mRightPane->setCoord( mLeftPane->getPosition().left + leftPaneWidth + 4,
-                              mRightPane->getPosition().top,
-                              mMainWidget->getSize().width - leftPaneWidth,
-                              mMainWidget->getSize().height);
-
-        static constexpr int minPadding = 12;
-        static constexpr int maxPadding = 23; 
-        static constexpr int maxSize = 52; 
-        static constexpr int minSize = 24;
-        static constexpr int minMargin = 6;
+        static int maxPadding = MyGUI::utility::parseInt(mCategories->getUserString("MaxPadding"));
+        static int maxSize = MyGUI::utility::parseInt(mCategories->getUserString("MaxSize"));
+        static int minMargin = MyGUI::utility::parseInt(mCategories->getUserString("MinMargin"));
+        static int minSize = MyGUI::utility::parseInt(mCategories->getUserString("MinSize"));
+        static int padding = MyGUI::utility::parseInt(mCategories->getUserString("Padding"));
         
-        mCategories->setSize(mRightPane->getWidth()-70, mCategories->getHeight());
-
         int count = mCategories->getChildCount();
-        
-        int padding = 18;
 
         int width = std::min(maxSize,std::max(static_cast<int>(((mCategories->getWidth()-(2*minMargin)-(padding*count)) / static_cast<float>(count))), minSize));
         int sidemargin = ((mCategories->getWidth() - ((width+padding) * count))/2) + 8; 
@@ -206,6 +191,22 @@ namespace MWGui
             widget = mCategories->getChildAt(i);
             widget->setCoord(MyGUI::IntCoord(mCategories->getChildAt(i-1)->getLeft()+width+padding,widget->getTop(),width,width));
         }
+    }
+
+    void InventoryWindow::adjustPanes()
+    {
+        const float aspect = 0.5; // fixed aspect ratio for the avatar image
+        int leftPaneWidth = static_cast<int>((mMainWidget->getSize().height - 44) * aspect);
+        if (!mLeftPane->getVisible())
+            leftPaneWidth = 0;
+
+        mLeftPane->setSize( leftPaneWidth, mMainWidget->getSize().height-12);
+        mRightPane->setCoord( mLeftPane->getPosition().left + leftPaneWidth + 4,
+                              mRightPane->getPosition().top,
+                              mMainWidget->getSize().width - leftPaneWidth,
+                              mMainWidget->getSize().height);
+
+        adjustCategoryHeader();
         updatePreviewSize();
     }
 

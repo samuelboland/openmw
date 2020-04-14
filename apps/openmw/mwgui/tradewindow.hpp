@@ -37,6 +37,8 @@ namespace MWGui
             void borrowItem (int index, size_t count);
             void returnItem (int index, size_t count);
 
+            void adjustCategoryHeader();
+
             int getMerchantServices();
 
             virtual bool exit();
@@ -66,6 +68,8 @@ namespace MWGui
             Gui::ImagePushButton* mMagicButton;
             Gui::ImagePushButton* mMiscButton;
             
+            MyGUI::Widget* mCategories;
+
             MyGUI::EditBox* mFilterEdit;
 
             MyGUI::Button* mIncreaseButton;
@@ -106,7 +110,7 @@ namespace MWGui
             void onBalanceButtonReleased(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id);
             void onBalanceValueChanged(int value);
             void onRepeatClick(MyGUI::Widget* widget, MyGUI::ControllerItem* controller);
-
+            
             void addRepeatController(MyGUI::Widget* widget);
 
             void onIncreaseButtonTriggered();
