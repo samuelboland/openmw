@@ -157,9 +157,9 @@ namespace MWGui
         static int angle = 0;
 
         if (_left < mLastDragPos.left)
-            angle -= 1;
+            angle -= 2;
         else if (_left > mLastDragPos.left)
-            angle += 1;
+            angle += 2;
 
         mPreview->setAngle(osg::DegreesToRadians(static_cast<float>(angle)));
         angle %= 360;
@@ -337,8 +337,29 @@ namespace MWGui
         int index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
         if (key == MyGUI::KeyCode::X)
         {
-            mDrop = true; 
-            onItemSelected(index);
+            mDrop = Settings::Manager::getBool("leftclick activates", "Input"); 
+            if (!mDrop)
+            {
+                auto model = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).second;
+                auto item = model->getItem(index);
+                if (item.mBase.isEmpty()) return;
+
+                MWWorld::Ptr player = MWMechanics::getPlayer();
+                MWWorld::InventoryStore& invStore = player.getClass().getInventoryStore(player);
+
+                std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
+                MWBase::Environment::get().getWindowManager()->playSound(sound);
+
+                if (invStore.isEquipped(item.mBase))
+                    invStore.unequipItem(item.mBase, player);
+                else 
+                    useItem(item.mBase);
+
+                mItemView->update();
+                notifyContentChanged();
+            }
+            else 
+                onItemSelected(index);
         }
     }
 
@@ -433,6 +454,10 @@ namespace MWGui
             }
         }
 
+        auto mode = MWBase::Environment::get().getWindowManager()->getMode();
+
+        bool leftClickActivates = Settings::Manager::getBool("leftclick activates", "Input"); 
+ 
         if (count > 1 && !shift)
         {
             CountDialog* dialog = MWBase::Environment::get().getWindowManager()->getCountDialog();
@@ -442,7 +467,12 @@ namespace MWGui
             if (mTrading)
                 dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::sellItem);
             else
-                dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::onToggleItem);
+            {
+                if (mode == GM_Container || !leftClickActivates)
+                    dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::dragItem);
+                else
+                    dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::onToggleItem);
+            }
             mSelectedItem = index;
         }
         else
@@ -451,7 +481,12 @@ namespace MWGui
             if (mTrading)
                 sellItem (nullptr, count);
             else
-                onToggleItem (nullptr, count);
+            {
+                if (mode == GM_Container || !leftClickActivates)
+                    dragItem(nullptr, count);
+                else 
+                    onToggleItem (nullptr, count);
+            }
         }
     }
 
