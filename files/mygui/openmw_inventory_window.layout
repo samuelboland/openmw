@@ -15,7 +15,7 @@
 
     <Widget type="Widget" skin="" position="232 0 568 300" align="Stretch" name="RightPane">
         <!-- Categories -->
-        <Widget type="Widget" skin="" position="8 8 540 80" align="Left Top HStretch" name="Categories">
+        <Widget type="Widget" skin="" position="8 8 540 55" align="Left Top HStretch" name="Categories">
 
             <UserString key="MaxSize" value="52"/>
             <UserString key="MaxPadding" value="23"/>

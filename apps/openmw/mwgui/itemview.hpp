@@ -4,6 +4,7 @@
 #include <MyGUI_Widget.h>
 
 #include "itemmodel.hpp"
+#include "itemlistwidget.hpp"
 #include "itemlistwidgetheader.hpp"
 
 namespace MWGui
@@ -28,12 +29,15 @@ namespace MWGui
         typedef MyGUI::delegates::CMultiDelegate2<MyGUI::Widget*,MyGUI::KeyCode> EventHandle_WidgetKey;
         typedef MyGUI::delegates::CMultiDelegate1<ItemModel::ModelIndex> EventHandle_ModelIndex;
         typedef MyGUI::delegates::CMultiDelegate0 EventHandle_Void;
+        typedef MyGUI::delegates::CMultiDelegate1<ItemListWidget*> EventHandle_Item;
         /// Fired when an item was clicked
         EventHandle_ModelIndex eventItemClicked;
         /// Fired when a key is pressed over a focused item 
         EventHandle_WidgetKey eventKeyButtonPressed;        
         /// Fired when the background was clicked (useful for drag and drop)
         EventHandle_Void eventBackgroundClicked;
+        /// Fired when an icon gets mouse focus 
+        EventHandle_Item eventItemFocused; 
 
         void update();
 
@@ -51,7 +55,8 @@ namespace MWGui
         void onSelectedItem (MyGUI::Widget* sender);
         void onSelectedBackground (MyGUI::Widget* sender);
         void onMouseWheelMoved(MyGUI::Widget* _sender, int _rel);
-
+        void onItemFocused(ItemListWidget* item);
+        
         ItemModel* mModel;
         MyGUI::ScrollView* mScrollView;
         ItemListWidgetHeader* mHeader;

@@ -136,9 +136,22 @@ void ItemView::update()
         itemWidget->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemView::onSelectedItem);
         itemWidget->eventMouseWheel += MyGUI::newDelegate(this, &ItemView::onMouseWheelMoved);
         itemWidget->eventKeyButtonPressed += MyGUI::newDelegate(this, &ItemView::onKeyButtonPressed);
+        itemWidget->eventItemFocused += MyGUI::newDelegate(this, &ItemView::onItemFocused);
     }
     layoutWidgets();
 }
+void ItemView::onItemFocused(ItemListWidget* item)
+{
+    for (size_t i = 0; i < mScrollView->getChildAt(0)->getChildCount();i++)
+    {
+        auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
+        if (item != w)
+            w->setStateFocused(false);
+    }
+    MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(item);
+    eventItemFocused(item);
+}
+
 void ItemView::resetScrollBars()
 {
     mScrollView->setViewOffset(MyGUI::IntPoint(0, 0));
@@ -153,6 +166,63 @@ void ItemView::onSelectedItem(MyGUI::Widget *sender)
 void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyGUI::Char character)
 {
     ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+
+    if (key == MyGUI::KeyCode::ArrowUp || key == MyGUI::KeyCode::ArrowDown)
+    {
+        if (mScrollView->getChildCount() > 0 && mScrollView->getChildAt(0)->getChildCount() > 0)
+        {
+            int count = mScrollView->getChildAt(0)->getChildCount();
+            for (auto i = 0; i < count; i++)
+            {
+                ItemListWidget* w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
+                w->setStateFocused(false);
+            }
+
+            if (index < 0 || index > count - 1)
+                index = 0;
+
+            if (key == MyGUI::KeyCode::ArrowUp)
+            {
+                if (index < 2)
+                    index = 0;
+                else 
+                    index -= 1;
+            }
+            else
+            {
+                if (index >= count - 2)
+                    index = count - 1;
+                else 
+                    index += 1;
+            }
+
+            ItemListWidget* w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(index));
+            w->setStateFocused(true);
+            onItemFocused(w);
+
+            // make sure we adjust for scrolling, this is just an approximation 
+            if (mScrollView->isVisibleVScroll())
+            {
+                // how many items the scrollview can show 
+                int maxItems = mScrollView->getHeight() / w->getHeight();
+                int minIndex = std::ceil((-mScrollView->getViewOffset().top / static_cast<float>(w->getHeight())));
+                int maxIndex = minIndex + maxItems - 2;
+
+                // this is *not* a scroll-to, it assumes the item is already in view 
+                if (index > maxIndex)
+                {
+                    mScrollView->setViewOffset(MyGUI::IntPoint(0,static_cast<int>(mScrollView->getViewOffset().top - w->getHeight())));
+                }
+                else if (index < minIndex)
+                {
+                    mScrollView->setViewOffset(MyGUI::IntPoint(0,static_cast<int>(mScrollView->getViewOffset().top + w->getHeight())));
+                }
+            }
+        }
+    }
+    else if (key == MyGUI::KeyCode::Return)
+        eventItemClicked(index);
+
     eventKeyButtonPressed(sender, key);
 }
 

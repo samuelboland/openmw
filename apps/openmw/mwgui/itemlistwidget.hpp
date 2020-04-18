@@ -35,6 +35,9 @@ namespace MWGui
         /// Register needed components with MyGUI's factory manager
         static void registerComponents ();
 
+        typedef MyGUI::delegates::CMultiDelegate1<ItemListWidget*> EventHandle_Item;
+        EventHandle_Item eventItemFocused;
+        
         enum ItemState
         {
             None,
@@ -45,6 +48,10 @@ namespace MWGui
         
         /// \a ptr may be empty
         void setItem(const ItemStack& item, int category);
+
+        void setStateFocused(bool focus);
+
+        MWWorld::Ptr getPtr();
 
     protected:
         void initialiseOverride() final;
@@ -69,7 +76,9 @@ namespace MWGui
         Gui::SharedStateButton* mWeaponType; 
         Gui::HBox* mItem;
         MyGUI::ImageBox* mOverlay;
-        
+
+        MWWorld::Ptr mPtr;
+
         static const std::unordered_map<ESM::Weapon::Type, const std::string> mWeapType; 
         static const std::string mBlank; 
     };

@@ -7,6 +7,8 @@
 #include <components/widgets/imagepushbutton.hpp>
 #include <components/widgets/box.hpp>
 
+#include "itemlistwidget.hpp"
+
 #include "../mwworld/ptr.hpp"
 #include "../mwrender/characterpreview.hpp"
 
@@ -36,6 +38,12 @@ namespace MWGui
     class InventoryWindow : public WindowPinnableBase
     {
         public:
+
+            enum Mode {
+                View_Item,
+                View_Avatar
+            };
+
             InventoryWindow(DragAndDrop* dragAndDrop, osg::Group* parent, Resource::ResourceSystem* resourceSystem);
 
             virtual void onOpen();
@@ -114,6 +122,10 @@ namespace MWGui
             float mScaleFactor;
             float mUpdateTimer; 
 
+            Mode mViewMode;
+
+            double mScale;
+
             MyGUI::Widget* mAvatar;
             MyGUI::ImageBox* mAvatarImage;
 
@@ -130,6 +142,7 @@ namespace MWGui
             void onHeaderClicked(int sort);
             void onToggleItem(MyGUI::Widget* sender, int count);
             void onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key);
+            void onItemFocus(ItemListWidget* item);
             void onItemSelected(int index);
             void onItemSelectedFromSourceModel(int index);
 

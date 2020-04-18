@@ -62,6 +62,7 @@ namespace MWGui
 
     void ItemListWidget::setItem(const ItemStack &item,int category)
     {
+        mPtr = item.mBase;
         const std::string typeName = item.mBase.getClass().getTypeName();
 
         Gui::ButtonGroup group;
@@ -143,11 +144,27 @@ namespace MWGui
 
             if (!isContainer)
             {
+                int count = 0;
+                for (auto owner : stolenItems)
+                    count += owner.second;
+
                 MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
                     MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
                 t->setImageTexture("textures\\ui\\stolen.dds");
                 t->setNeedMouseFocus(false);
+                
                 x+= size;            
+                
+                MyGUI::TextBox* tb = mItem->getParent()->createWidget<MyGUI::TextBox>("MW_Button",
+                    MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+                tb->setCaption("(" + MyGUI::utility::toString(count) + ")");
+                tb->setTextAlign(MyGUI::Align::Left);
+                tb->setSize(tb->getTextSize().width+8
+                            ,MWBase::Environment::get().getWindowManager()->getFontHeight()+2);
+                tb->setTextColour(MyGUI::Colour(0.505, 0.105, 0.078)); 
+                tb->setNeedMouseFocus(false);
+
+                x+= tb->getWidth();
             }
         }
 
@@ -186,20 +203,38 @@ namespace MWGui
         Base::initialiseOverride();
     }
 
+    MWWorld::Ptr ItemListWidget::getPtr()
+    {
+        return mPtr;
+    }
+
+    void ItemListWidget::setStateFocused(bool focus)
+    {
+        if (focus)
+        {
+            MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
+            MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
+            mName->setStateSelected(true);
+            mOverlay->setVisible(true);
+        }
+        else 
+        {
+            MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
+            mName->setStateSelected(false);
+            mOverlay->setVisible(false);
+        }
+    }
+
     void ItemListWidget::onMouseSetFocus(MyGUI::Widget *_old) 
     {
-        MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
-        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
-        mName->setStateSelected(true);
-        mOverlay->setVisible(true);
+        setStateFocused(true);
         Base::onMouseSetFocus(_old);
+        eventItemFocused(this);
     }
 
     void ItemListWidget::onMouseLostFocus(MyGUI::Widget *_new)
     {
-        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
-        mName->setStateSelected(false);
-        mOverlay->setVisible(false);
+        setStateFocused(false);
         Base::onMouseLostFocus(_new);
     }
 

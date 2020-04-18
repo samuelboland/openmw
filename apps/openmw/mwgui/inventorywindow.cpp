@@ -23,6 +23,8 @@
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 
+#include "../mwgui/hud.hpp"
+
 #include "../mwworld/inventorystore.hpp"
 #include "../mwworld/class.hpp"
 #include "../mwworld/actionequip.hpp"
@@ -68,6 +70,8 @@ namespace MWGui
         , mTrading(false)
         , mScaleFactor(1.0f)
         , mUpdateTimer(0.f)
+        , mScale(1.0)
+        , mViewMode(Mode::View_Avatar)
     {
         float uiScale = Settings::Manager::getFloat("scaling factor", "GUI");
         if (uiScale > 1.0)
@@ -117,6 +121,7 @@ namespace MWGui
         mItemView->eventBackgroundClicked += MyGUI::newDelegate(this, &InventoryWindow::onBackgroundSelected);
         mItemView->getHeader()->eventItemClicked += MyGUI::newDelegate(this, &InventoryWindow::onHeaderClicked);
         mItemView->eventKeyButtonPressed += MyGUI::newDelegate(this, &InventoryWindow::onKeyButtonPressed);
+        mItemView->eventItemFocused += MyGUI::newDelegate(this, &InventoryWindow::onItemFocus);
 
         mAllButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
         mWeaponButton->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onFilterChanged);
@@ -142,9 +147,44 @@ namespace MWGui
         adjustPanes();
     }
 
+    void InventoryWindow::onItemFocus(ItemListWidget* item)
+    {
+        if (item && !item->getPtr().isEmpty())
+            mPreview->setItem(item->getPtr());
+        else
+            mPreview->updatePtr(MWMechanics::getPlayer());
+
+        // if in Mode::Mode_Item do 2 things
+        // 1) remove tooltip user data from itemwidget (need to change this function call to accept that Item instead of Ptr) 
+        // 2) update the info tooltip (static on avatar) with all changes 
+        //      - Ensure the text widget is actually disabled so it doesn't 
+        //        intefere with mouse clicks
+        //        note: ensure the tooltip widget does not accept mouse input 
+        //
+        //      - put into categories, what deltas to show?
+        //         
+        //      + Delta Colors
+        //          + red->negative delta
+        //          + green->positive delta
+        //          + NOCHANGE->zero delta
+        //       
+        //      1) Weapons:
+        //          1.1) Ranged:
+        //              + damage, dps 
+        //          1.2) Melee:
+        //              + chop, slash, thrust, dps
+        //          1.3) Ammo:
+        //              + damage
+        //      2) Armor:
+        //          + armor 
+        //      3) Everything Else Show NOTHING 
+
+        // we also need an onItemLostFocus to reset the showing of tooltips 
+    }
+
     void InventoryWindow::onDragStart(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
     {
-        if (_id!=MyGUI::MouseButton::Left) return;
+        if (_id != MyGUI::MouseButton::Left) return;
         mLastDragPos = MyGUI::IntPoint(_left, _top);
     }
 
@@ -153,16 +193,26 @@ namespace MWGui
         if (_id != MyGUI::MouseButton::Left) return;
         
         MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
+    
+        static constexpr float scaleMax = 1.18;
+        static constexpr float scaleMin = 0.6;
 
-        static int angle = 0;
+        if (diff.top < 0)
+        {
+            if (mScale < scaleMax)
+            {
+                mScale += 0.01;
+            }
+        }
+        else if (diff.top > 0)
+        {
+            if (mScale > scaleMin)
+            {
+                mScale -= 0.01;
+            }
+        }
 
-        if (_left < mLastDragPos.left)
-            angle -= 2;
-        else if (_left > mLastDragPos.left)
-            angle += 2;
-
-        mPreview->setAngle(osg::DegreesToRadians(static_cast<float>(angle)));
-        angle %= 360;
+        mPreview->rotateScaleDelta(-diff.left, mScale);
         dirtyPreview();
         
         mLastDragPos = MyGUI::IntPoint(_left, _top);
@@ -335,13 +385,13 @@ namespace MWGui
             return; 
 
         int index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+        auto model = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).second;
+        auto item = model->getItem(index);
         if (key == MyGUI::KeyCode::X)
         {
             mDrop = Settings::Manager::getBool("leftclick activates", "Input"); 
             if (!mDrop)
             {
-                auto model = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).second;
-                auto item = model->getItem(index);
                 if (item.mBase.isEmpty()) return;
 
                 MWWorld::Ptr player = MWMechanics::getPlayer();
@@ -468,7 +518,7 @@ namespace MWGui
                 dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::sellItem);
             else
             {
-                if (mode == GM_Container || !leftClickActivates)
+                if (mode == GM_Container || mode == GM_Companion || !leftClickActivates)
                     dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::dragItem);
                 else
                     dialog->eventOkClicked += MyGUI::newDelegate(this, &InventoryWindow::onToggleItem);
@@ -482,7 +532,7 @@ namespace MWGui
                 sellItem (nullptr, count);
             else
             {
-                if (mode == GM_Container || !leftClickActivates)
+                if (mode == GM_Container || mode == GM_Companion || !leftClickActivates)
                     dragItem(nullptr, count);
                 else 
                     onToggleItem (nullptr, count);
