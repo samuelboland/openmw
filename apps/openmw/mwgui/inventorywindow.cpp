@@ -3,6 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 
+#include <MyGUI_Gui.h>
 #include <MyGUI_Window.h>
 #include <MyGUI_ImageBox.h>
 #include <MyGUI_RenderManager.h>
@@ -12,8 +13,8 @@
 
 #include <osg/Texture2D>
 
+#include <components/widgets/box.hpp>
 #include <components/misc/stringops.hpp>
-
 #include <components/myguiplatform/myguitexture.hpp>
 
 #include <components/settings/settings.hpp>
@@ -41,6 +42,8 @@
 #include "draganddrop.hpp"
 #include "widgets.hpp"
 
+#include "descriptions.hpp"
+
 namespace
 {
 
@@ -66,6 +69,9 @@ namespace MWGui
         , mGuiMode(GM_Inventory)
         , mLastXSize(0)
         , mLastYSize(0)
+        , mRoll(0)
+        , mYaw(0)
+        , mPitch(0)
         , mPreview(new MWRender::InventoryPreview(parent, resourceSystem, MWMechanics::getPlayer()))
         , mTrading(false)
         , mScaleFactor(1.0f)
@@ -89,6 +95,8 @@ namespace MWGui
         getWidget(mLeftPane, "LeftPane");
         getWidget(mRightPane, "RightPane");
 
+        getWidget(mDescription, "Description");
+
         getWidget(mAllButton,"AllButton"); 
         getWidget(mWeaponButton,"WeaponButton"); 
         getWidget(mArmorButton,"ArmorButton"); 
@@ -110,6 +118,7 @@ namespace MWGui
         mAvatarImage->eventMouseButtonClick += MyGUI::newDelegate(this, &InventoryWindow::onAvatarClicked);
         mAvatarImage->eventMouseButtonPressed += MyGUI::newDelegate(this, &InventoryWindow::onDragStart);
         mAvatarImage->eventMouseDrag += MyGUI::newDelegate(this, &InventoryWindow::onMouseDrag);
+        mAvatarImage->eventMouseWheel += MyGUI::newDelegate(this, &InventoryWindow::onMouseWheel);
         mAvatarImage->setRenderItemTexture(mPreviewTexture.get());
         mAvatarImage->getSubWidgetMain()->_setUVSet(MyGUI::FloatRect(0.f, 0.f, 1.f, 1.f));
 
@@ -147,37 +156,88 @@ namespace MWGui
         adjustPanes();
     }
 
+    void InventoryWindow::resetAvatar()
+    {
+        mDescription->setCaption({});
+        mRoll = 0;
+        mYaw = 0;
+        mPitch = 0;
+        mScale = 1.0;
+        mViewMode = View_Avatar;
+        mPreview->updatePtr(MWMechanics::getPlayer());
+        mPreview->rebuild();
+        mPreview->update();
+    }
+
     void InventoryWindow::onItemFocus(ItemListWidget* item)
     {
-        if (item && !item->getPtr().isEmpty())
-            mPreview->setItem(item->getPtr());
-        else
-            mPreview->updatePtr(MWMechanics::getPlayer());
+        mRoll = 0;
+        mYaw = 200;
+        mPitch = 60;
+        mScale = 0.8;
+        
+        const int largeFont = MWBase::Environment::get().getWindowManager()->getFontHeight() * 1.1;
+        mDescription->setCaption({});
+        mDescription->setFontHeight(largeFont);
+        mDescription->setEditWordWrap(true);
 
-        // if in Mode::Mode_Item do 2 things
-        // 1) remove tooltip user data from itemwidget (need to change this function call to accept that Item instead of Ptr) 
-        // 2) update the info tooltip (static on avatar) with all changes 
-        //      - Ensure the text widget is actually disabled so it doesn't 
-        //        intefere with mouse clicks
-        //        note: ensure the tooltip widget does not accept mouse input 
-        //
-        //      - put into categories, what deltas to show?
-        //         
-        //      + Delta Colors
-        //          + red->negative delta
-        //          + green->positive delta
-        //          + NOCHANGE->zero delta
-        //       
-        //      1) Weapons:
-        //          1.1) Ranged:
-        //              + damage, dps 
-        //          1.2) Melee:
-        //              + chop, slash, thrust, dps
-        //          1.3) Ammo:
-        //              + damage
-        //      2) Armor:
-        //          + armor 
-        //      3) Everything Else Show NOTHING 
+        if (item && !item->getPtr().isEmpty() && !mDragAndDrop->mIsOnDragAndDrop)
+        {
+            mViewMode = View_Item;
+            mPreview->setScale(mScale);
+            mPreview->setItem(item->getPtr());
+            mPreview->ryp(0.f,osg::DegreesToRadians(static_cast<double>(mYaw)),osg::DegreesToRadians(static_cast<double>(mPitch)));
+            
+            const auto ptr = item->getPtr();
+        
+            std::string description = {};
+            std::string key = {};
+            if (ptr.getTypeName() == typeid(ESM::Miscellaneous).name() && ptr.getCellRef().getSoul() != "")
+            {
+                key = MWBase::Environment::get().getWorld()->getStore().get<ESM::Creature>().search(ptr.getCellRef().getSoul())->mId;
+                description = filledGemDescriptions.at(key);
+            }
+            else if (ptr.getTypeName() == typeid(ESM::Armor).name())
+                key = ptr.get<ESM::Armor>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Clothing).name())
+                key = ptr.get<ESM::Clothing>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Ingredient).name())
+                key = ptr.get<ESM::Ingredient>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Potion).name())
+                key = ptr.get<ESM::Potion>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Armor).name())   
+                key = ptr.get<ESM::Armor>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Weapon).name())
+                key = ptr.get<ESM::Weapon>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Clothing).name())   
+                key = ptr.get<ESM::Clothing>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Potion).name())   
+                key = ptr.get<ESM::Potion>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Ingredient).name())   
+                key = ptr.get<ESM::Ingredient>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Lockpick).name())
+                key = ptr.get<ESM::Lockpick>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Probe).name())
+                key = ptr.get<ESM::Probe>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Repair).name())
+                key = ptr.get<ESM::Repair>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Apparatus).name())   
+                key = ptr.get<ESM::Apparatus>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Book).name())   
+                key = ptr.get<ESM::Book>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Light).name())
+                key = ptr.get<ESM::Light>()->mBase->mId;
+            else if (ptr.getTypeName() == typeid(ESM::Miscellaneous).name()) 
+                key = ptr.get<ESM::Miscellaneous>()->mBase->mId;
+            
+            const auto it = generalDescriptions.find(key);
+            if (description.empty() && it != generalDescriptions.cend())
+                description = it->second; 
+
+            mDescription->setCaptionWithReplacing("#dac091" + description);
+        }
+        else
+            resetAvatar();
 
         // we also need an onItemLostFocus to reset the showing of tooltips 
     }
@@ -188,31 +248,48 @@ namespace MWGui
         mLastDragPos = MyGUI::IntPoint(_left, _top);
     }
 
-    void InventoryWindow::onMouseDrag(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
-    {
-        if (_id != MyGUI::MouseButton::Left) return;
-        
-        MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
-    
+    void InventoryWindow::onMouseWheel(MyGUI::Widget* _sender, int _rel)
+    { 
         static constexpr float scaleMax = 1.18;
         static constexpr float scaleMin = 0.6;
 
-        if (diff.top < 0)
+        if (_rel > 0)
         {
             if (mScale < scaleMax)
             {
                 mScale += 0.01;
             }
         }
-        else if (diff.top > 0)
+        else if (_rel < 0)
         {
             if (mScale > scaleMin)
             {
                 mScale -= 0.01;
             }
         }
+        mPreview->setScale(mScale);
+        dirtyPreview();
+    }
 
-        mPreview->rotateScaleDelta(-diff.left, mScale);
+    void InventoryWindow::onMouseDrag(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
+    {
+        if (_id != MyGUI::MouseButton::Left) return;
+        
+        MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
+        mPreview->ryp(osg::DegreesToRadians(static_cast<float>(mRoll)),
+                           osg::DegreesToRadians(static_cast<float>(mYaw)),
+                           osg::DegreesToRadians(static_cast<float>(mPitch)));
+
+        if (mViewMode == View_Item)
+        {
+            mRoll += 0;
+            mPitch -= diff.top;
+            mRoll %= 360; 
+            mPitch %= 360;
+        }
+        mYaw += diff.left;
+        mYaw %= 360; 
+
         dirtyPreview();
         
         mLastDragPos = MyGUI::IntPoint(_left, _top);
@@ -575,6 +652,8 @@ namespace MWGui
 
     void InventoryWindow::dragItem(MyGUI::Widget* sender, int count)
     {
+        resetAvatar();
+
         ensureSelectedItemUnequipped(count);
         mDragAndDrop->startDrag(mSelectedItem, mSortModel, mTradeModel, mItemView, count);
         notifyContentChanged();
@@ -621,11 +700,7 @@ namespace MWGui
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
 
         if (!mPtr.isEmpty())
-        {
-            mSortModel->setSort(SortFilterItemModel::Sort_Name);
-            mItemView->update();
-            notifyContentChanged();
-        }
+            updatePlayer();
 
         if (MWBase::Environment::get().getWindowManager()->getMode() != GM_Inventory)
         {
@@ -635,6 +710,7 @@ namespace MWGui
         else 
         {
             std::string setting = getModeSetting();
+            resetAvatar();
             mLeftPane->setVisible(Settings::Manager::getBool(setting + " avatar", "Windows"));
             mToggleAvatar->setVisible(true);
         }
@@ -800,12 +876,15 @@ namespace MWGui
     
     void InventoryWindow::onHeaderClicked(int sort)
     {
-        mSortModel->setSort(sort);
+        mSortModel->toggleSort(sort);
         mItemView->update();
     }
 
     void InventoryWindow::onFilterChanged(MyGUI::Widget* _sender)
     {
+        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
+        resetAvatar();
+
         if (_sender == mAllButton)
             mSortModel->setCategory(SortFilterItemModel::Category_All);
         else if (_sender == mWeaponButton)

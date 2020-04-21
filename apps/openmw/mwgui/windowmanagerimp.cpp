@@ -103,6 +103,7 @@
 #include "itemwidget.hpp"
 #include "itemlistwidget.hpp"
 #include "itemlistwidgetheader.hpp"
+#include "spelllistwidget.hpp"
 #include "screenfader.hpp"
 #include "debugwindow.hpp"
 #include "spellview.hpp"
@@ -229,6 +230,7 @@ namespace MWGui
         ItemWidget::registerComponents();
         ItemListWidget::registerComponents();
         ItemListWidgetHeader::registerComponents();
+        SpellListWidget::registerComponents();
         SpellView::registerComponents();
         Gui::registerAllWidgets();
 

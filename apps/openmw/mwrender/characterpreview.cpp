@@ -168,7 +168,7 @@ namespace MWRender
         stateset->setAttributeAndModes(fog, osg::StateAttribute::OFF|osg::StateAttribute::OVERRIDE);
 
         osg::ref_ptr<osg::LightModel> lightmodel = new osg::LightModel;
-        lightmodel->setAmbientIntensity(osg::Vec4(0.0, 0.0, 0.0, 1.0));
+        lightmodel->setAmbientIntensity(osg::Vec4(0.3, 0.3, 0.3, 1.0));
         stateset->setAttributeAndModes(lightmodel, osg::StateAttribute::ON);
 
         osg::ref_ptr<osg::Light> light = new osg::Light;
@@ -352,8 +352,8 @@ namespace MWRender
             mNode->addChild(node);
             mNode->setPosition(osg::Vec3d(0,0,0));
             osg::Vec3f scale = osg::Vec3f(0.f,0.f,0.f);
-            mNode->setAttitude(osg::Quat(osg::DegreesToRadians(55.f), osg::Vec3(1,0,0))
-                                    * osg::Quat(osg::DegreesToRadians(-180.f),osg::Vec3(0,0,1)));
+            mNode->setAttitude(osg::Quat(osg::DegreesToRadians(0.f), osg::Vec3(1,0,0))
+                                    * osg::Quat(osg::DegreesToRadians(0.f),osg::Vec3(0,0,1)));
             mUpdateCameraCallback = new UpdateCameraCallback(node, osg::Vec3f(0, 400, 0), osg::Vec3f(0,0,0));
             mCamera->addUpdateCallback(mUpdateCameraCallback);
         }
@@ -457,7 +457,18 @@ namespace MWRender
 
     void InventoryPreview::updatePtr(const MWWorld::Ptr &ptr)
     {
+        if (mUpdateCameraCallback)
+            mCamera->removeUpdateCallback(mUpdateCameraCallback);
+
+        mPosition = osg::Vec3f(0, 700, 71);
+        mLookAt = osg::Vec3f(0,0, 71);
         mCharacter = MWWorld::Ptr(ptr.getBase(), nullptr);
+        mNode->removeChildren(0,mNode->getNumChildren());
+        mNode->setAttitude(osg::Quat(0.f, osg::Vec3(0,0,1)));
+        mNode->setScale(osg::Vec3f(1.f,1.f,1.f));
+        mNode->setPosition(osg::Vec3d(0.0f,0.0f,4.0f));
+        mCamera->setViewMatrixAsLookAt(mPosition, mLookAt, osg::Vec3f(0,0,1));
+        redraw();
     }
 
     void InventoryPreview::onSetup()
@@ -471,21 +482,16 @@ namespace MWRender
         mCamera->setViewMatrixAsLookAt(mPosition * scale.z(), mLookAt * scale.z(), osg::Vec3f(0,0,1));
     }
 
-    void InventoryPreview::rotateScaleDelta(double dtr, double dts)
+    void InventoryPreview::setScale(double scale)
     {
-        static const double mOrbitSpeed = osg::PI / 32;
-        double rotDist = mOrbitSpeed * dtr;
+        mNode->setScale(osg::Vec3d{scale,scale,scale});
+    }
 
-        osg::Vec3d eye, center, up;
-        osg::Vec3d axis{0,0,1};
-        mCamera->getViewMatrixAsLookAt(eye, center, up);
-        
-        osg::Quat rotation = osg::Quat(rotDist,axis);
-        osg::Vec3d oldOffset = eye;
-        osg::Vec3d newOffset = rotation * oldOffset;
-        
-        mNode->setScale(osg::Vec3d(dts,dts,dts));
-        mCamera->setViewMatrixAsLookAt(newOffset, mLookAt * dts, axis);
+    void InventoryPreview::ryp(double roll, double yaw, double pitch)
+    {
+        //mNode->setAttitude(osg::Quat(roll, osg::Vec3(0,1,0)));
+        mNode->setAttitude(osg::Quat(pitch, osg::Vec3(1,0,0))* osg::Quat(yaw, osg::Vec3(0,0,1))*osg::Quat(roll, osg::Vec3(0,1,0)));
+        //mNode->setAttitude(osg::Quat(yaw, osg::Vec3(0,0,1)));
         redraw();
     }
 

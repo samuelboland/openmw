@@ -155,7 +155,7 @@ namespace MWGui
                 
                 x+= size;            
                 
-                MyGUI::TextBox* tb = mItem->getParent()->createWidget<MyGUI::TextBox>("MW_Button",
+                MyGUI::TextBox* tb = mItem->getParent()->createWidget<MyGUI::TextBox>("",
                     MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
                 tb->setCaption("(" + MyGUI::utility::toString(count) + ")");
                 tb->setTextAlign(MyGUI::Align::Left);

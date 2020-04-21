@@ -5,11 +5,20 @@
         <Property key="MinSize" value="250 100"/>
     
     <Widget type="Widget" skin="" position="0 0 212 300" align="Stretch" name="LeftPane">
-        <Widget type="Widget" skin="" position="0 0 206 300" align="Stretch" name="Avatar">
+        <Widget type="Widget" skin="" position="8 0 206 300" align="Stretch" name="Avatar">
             <Widget type="ImageBox" skin="ImageBox" position="3 3 206 300" align="Stretch" name="AvatarImage">
                 <UserString key="ToolTipType" value="AvatarItemSelection"/>
                 <Property key="NeedMouse" value="true"/>
+                <Property key="NeedKey" value="true"/>
             </Widget>
+        </Widget>
+        <Widget type="EditBox" skin="SandBrightText" position="10 0 190 300" align="Bottom HStretch" name="Description">
+                <Property key="TextAlign" value="Center"/>
+                <Property key="EditWordWrap" value="true"/>
+                <Property key="NeedMouse" value="false"/>
+                <Property key="NeedKey" value="false"/>
+                <Property key="TextShadow" value="true"/>
+                <Property key="TextShadowColour" value="0.2 0.2 0.2"/>
         </Widget>
 =    </Widget>
 
@@ -86,7 +95,7 @@
         </Widget>
 
         <!-- Inventory list -->
-        <Widget type="ItemView" skin="MW_ItemView" position="8 90 545 100" align="Stretch" name="ItemView">
+        <Widget type="ItemView" skin="MW_ItemView" position="8 70 535 130" align="Stretch" name="ItemView">
             <Widget type="ImagePushButton" skin="ImageBox" position="4 6 20 20" align="Top Left" name="ToggleAvatar">
                 <Property key="ImageHighlighted" value="textures\ui\toggle_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\toggle_idle.dds"/>

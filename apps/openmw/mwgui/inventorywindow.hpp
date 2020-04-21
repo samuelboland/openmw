@@ -1,5 +1,5 @@
-#ifndef MGUI_Inventory_H
-#define MGUI_Inventory_H
+#ifndef OPENMW_MWGUI_INVENTORYWINDOW_H
+#define OPENMW_MWGUI_INVENTORYWINDOW_H
 
 #include "windowpinnablebase.hpp"
 #include "mode.hpp"
@@ -75,6 +75,8 @@ namespace MWGui
 
             void setGuiMode(GuiMode mode);
 
+            void resetAvatar();
+
             /// Cycle to previous/next weapon
             void cycle(bool next);
 
@@ -96,6 +98,8 @@ namespace MWGui
             MyGUI::TextBox* mArmorRating;
             MyGUI::TextBox* mEncumbranceBar;
 
+            MyGUI::EditBox* mDescription;
+
             Gui::ImagePushButton* mAllButton;
             Gui::ImagePushButton* mWeaponButton;
             Gui::ImagePushButton* mArmorButton;
@@ -116,6 +120,10 @@ namespace MWGui
 
             int mLastXSize;
             int mLastYSize;
+
+            int mRoll;
+            int mPitch;
+            int mYaw;
 
             bool mTrading;
             bool mDrop; 
@@ -145,6 +153,7 @@ namespace MWGui
             void onItemFocus(ItemListWidget* item);
             void onItemSelected(int index);
             void onItemSelectedFromSourceModel(int index);
+            void onMouseWheel(MyGUI::Widget* _sender, int _rel);
 
             void onDragStart(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id);
             void onMouseDrag(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id);

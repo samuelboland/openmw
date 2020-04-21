@@ -61,7 +61,7 @@ CompanionWindow::CompanionWindow(DragAndDrop *dragAndDrop, MessageBoxManager* ma
 
 void CompanionWindow::onHeaderClicked(int sort)
 {
-    mSortModel->setSort(sort);
+    mSortModel->toggleSort(sort);
     mItemView->update();
 }
 

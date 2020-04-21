@@ -9,6 +9,7 @@
 #include "../mwbase/environment.hpp"
 
 #include "inventorywindow.hpp"
+#include "spellmodel.hpp"
 #include "sortfilteritemmodel.hpp"
 
 namespace MWGui
@@ -20,6 +21,9 @@ namespace MWGui
         , mRatio(nullptr)
         , mArmorClass(nullptr)
         , mWeaponType(nullptr)
+        , mSpellName(nullptr)
+        , mCostChance(nullptr)
+        , mSchool(nullptr)
     {
 
     }
@@ -32,11 +36,14 @@ namespace MWGui
     void ItemListWidgetHeader::initialiseOverride()
     {
         assignWidget(mName, "Name");
+        assignWidget(mSpellName, "SpellName");
         assignWidget(mValue, "Value");
         assignWidget(mWeight, "Weight");
         assignWidget(mRatio, "Ratio");
         assignWidget(mArmorClass, "ArmorClass");
         assignWidget(mWeaponType, "WeaponType");
+        assignWidget(mCostChance, "CostChance");
+        assignWidget(mSchool, "School");
 
         if (mName)
         {
@@ -67,6 +74,22 @@ namespace MWGui
         {
             mWeaponType->setUserData(MWGui::SortFilterItemModel::Sort_WeaponType);
             mWeaponType->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemListWidgetHeader::onSortClicked);
+        }
+        if (mSpellName)
+        {
+            mSpellName->setUserData(MWGui::SpellModel::Sort_Name);
+            mSpellName->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemListWidgetHeader::onSortClicked);
+        }
+        // TODO 
+        //if (mCostChance)
+        //{
+        //    mCostChance->setUserData(MWGui::SpellModel::Sort_CostChance);
+        //    mCostChance->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemListWidgetHeader::onSortClicked);
+        //}
+        if (mSchool)
+        {
+            mSchool->setUserData(MWGui::SpellModel::Sort_School);
+            mSchool->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemListWidgetHeader::onSortClicked);
         }
 
         Base::initialiseOverride();

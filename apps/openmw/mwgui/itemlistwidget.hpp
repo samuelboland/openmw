@@ -20,9 +20,9 @@
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/class.hpp"
 
-
 namespace MWGui
 {
+
     /// @brief A widget that shows an icon for an MWWorld::Ptr
     class ItemListWidget : public MyGUI::Widget
     {

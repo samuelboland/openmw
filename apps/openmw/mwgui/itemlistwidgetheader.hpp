@@ -31,12 +31,18 @@ namespace MWGui
 
         void onSortClicked(MyGUI::Widget* sender); 
 
+        // all 
         MyGUI::Button* mName; 
+        //items
         MyGUI::Button* mValue;
         MyGUI::Button* mWeight; 
         MyGUI::Button* mRatio;
         MyGUI::Button* mArmorClass;
         MyGUI::Button* mWeaponType; 
+        // spells 
+        MyGUI::Button* mSpellName;
+        MyGUI::Button* mCostChance;
+        MyGUI::Button* mSchool;
     };
 
 }

@@ -88,7 +88,8 @@ namespace MWRender
 
         int getSlotSelected(int posX, int posY);
 
-        void rotateScaleDelta(double dtr, double dts);
+        void setScale(double scale);
+        void ryp(double roll, double yaw, double pitch);
 
     protected:
         osg::ref_ptr<osg::Viewport> mViewport;

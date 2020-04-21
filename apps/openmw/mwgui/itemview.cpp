@@ -71,14 +71,22 @@ void ItemView::layoutWidgets()
     MyGUI::Widget* dragArea = mScrollView->getChildAt(0);
     int y = 0;
 
-    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-50,36));
+    int height = 0;
+    for (size_t i = 0; i < dragArea->getChildCount(); i++)
+        height += dragArea->getChildAt(i)->getHeight();
+
+    bool scrollVisible = height > mScrollView->getHeight();
+    int rightMargin = (scrollVisible) ? 45 :10;
+
+    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-rightMargin,36));
 
     unsigned int count = dragArea->getChildCount();
     int h = (count) ? dragArea->getChildAt(0)->getHeight() : 0; 
 
     for (unsigned int i=0; i<count; ++i)
     {
-        dragArea->getChildAt(i)->setPosition(0,y);
+        dragArea->getChildAt(i)->setCoord(MyGUI::IntCoord(
+            0,y, dragArea->getWidth()-rightMargin, dragArea->getChildAt(0)->getHeight()));
         y += h;
     }
 
@@ -122,11 +130,12 @@ void ItemView::update()
     else 
         mHeader->changeWidgetSkin("MW_ItemListHeader_All");
 
+
     for (ItemModel::ModelIndex i=0; i < static_cast<int>(mModel->getItemCount()); ++i)
     {
         const ItemStack& item = mModel->getItem(i);
         ItemListWidget* itemWidget = dragArea->createWidget<ItemListWidget>("MW_ItemList",
-            MyGUI::IntCoord(0,0,mScrollView->getWidth()-50, 35), MyGUI::Align::HStretch | MyGUI::Align::Top);
+            MyGUI::IntCoord(0,0,mScrollView->getWidth(), 35), MyGUI::Align::HStretch | MyGUI::Align::Top);
 
         itemWidget->setNeedKeyFocus(true);
         itemWidget->setNeedMouseFocus(true);
@@ -140,6 +149,7 @@ void ItemView::update()
     }
     layoutWidgets();
 }
+
 void ItemView::onItemFocused(ItemListWidget* item)
 {
     for (size_t i = 0; i < mScrollView->getChildAt(0)->getChildCount();i++)
@@ -206,7 +216,7 @@ void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyG
                 // how many items the scrollview can show 
                 int maxItems = mScrollView->getHeight() / w->getHeight();
                 int minIndex = std::ceil((-mScrollView->getViewOffset().top / static_cast<float>(w->getHeight())));
-                int maxIndex = minIndex + maxItems - 2;
+                int maxIndex = minIndex + maxItems - 1;
 
                 // this is *not* a scroll-to, it assumes the item is already in view 
                 if (index > maxIndex)

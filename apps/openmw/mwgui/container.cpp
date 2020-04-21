@@ -58,7 +58,7 @@ namespace MWGui
 
     void ContainerWindow::onHeaderClicked(int sort)
     {
-        mSortModel->setSort(sort);
+        mSortModel->toggleSort(sort);
         mItemView->update();
     }
 

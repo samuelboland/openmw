@@ -255,12 +255,14 @@ namespace MWGui
         mDragItems.clear();
     }
 
+    void SortFilterItemModel::toggleSort(int sort)
+    {
+        mIncreasing = !mIncreasing;
+        mSort = sort;
+    }
+
     void SortFilterItemModel::setSort(int sort)
     {
-        if (mSort == sort)
-             mIncreasing = !mIncreasing; 
-         else 
-             mIncreasing = true; 
          mSort = sort; 
     }
     

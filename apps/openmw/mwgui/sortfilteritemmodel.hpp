@@ -21,7 +21,8 @@ namespace MWGui
         /// Dragged items are not displayed.
         void addDragItem (const MWWorld::Ptr& dragItem, size_t count);
         void clearDragItems();
-
+        
+        void toggleSort(int sort);
         void setSort(int sort);
         int getSort() const;
 
@@ -52,7 +53,8 @@ namespace MWGui
         static const int Category_Tool = (1<<9);
         static const int Category_Book = (1<<10);
         static const int Category_Simple = (1<<11);
-        static const int Category_All = (1<<12) - 1;
+
+        static const int Category_All = (1<<21) - 1;
 
         static const int Filter_OnlyIngredients = (1<<0);
         static const int Filter_OnlyEnchanted = (1<<1);
@@ -70,7 +72,6 @@ namespace MWGui
         static const int Sort_WeaponType = (1<<4);
         static const int Sort_ArmorType = (1<<5);
         static const int Sort_Default = (1<<6)-1; 
-
 
     private:
         std::vector<ItemStack> mItems;
