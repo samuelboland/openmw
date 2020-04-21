@@ -210,7 +210,7 @@ namespace MWGui
             mViewMode = View_Item;
             mPreview->setScale(mScale);
             mPreview->setItem(item->getPtr());
-            mPreview->ryp(0.f,osg::DegreesToRadians(static_cast<double>(mYaw)),osg::DegreesToRadians(static_cast<double>(mPitch)));
+            //mPreview->ryp(0.f,osg::DegreesToRadians(static_cast<double>(mYaw)),osg::DegreesToRadians(static_cast<double>(mPitch)));
             
             const auto ptr = item->getPtr();
         
@@ -300,9 +300,10 @@ namespace MWGui
         if (_id != MyGUI::MouseButton::Left) return;
         
         MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
-        mPreview->ryp(osg::DegreesToRadians(static_cast<float>(mRoll)),
-                           osg::DegreesToRadians(static_cast<float>(mYaw)),
-                           osg::DegreesToRadians(static_cast<float>(mPitch)));
+        //mPreview->ryp(osg::DegreesToRadians(static_cast<float>(mRoll)),
+        //                   osg::DegreesToRadians(static_cast<float>(mYaw)),
+        //                   osg::DegreesToRadians(static_cast<float>(mPitch)));
+        mPreview->trackballRotate(diff.left, diff.top);
 
         if (mViewMode == View_Item)
         {

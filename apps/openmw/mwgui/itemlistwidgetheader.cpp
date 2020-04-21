@@ -97,6 +97,8 @@ namespace MWGui
 
     void ItemListWidgetHeader::onSortClicked(MyGUI::Widget* sender)
     {
+        if (sender == nullptr) return;
+        
         eventItemClicked(*sender->getUserData<int>());
     }
 }
