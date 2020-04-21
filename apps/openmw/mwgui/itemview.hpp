@@ -58,6 +58,8 @@ namespace MWGui
         void onItemFocused(ItemListWidget* item);
         
         ItemModel* mModel;
+        ItemModel::ModelIndex mLastIndex;
+        
         MyGUI::ScrollView* mScrollView;
         ItemListWidgetHeader* mHeader;
 

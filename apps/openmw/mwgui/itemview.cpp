@@ -29,6 +29,7 @@ namespace MWGui
 
 ItemView::ItemView()
     : mModel(nullptr)
+    , mLastIndex(0)
     , mScrollView(nullptr)
     , mHeader(nullptr)
 {
@@ -99,6 +100,18 @@ void ItemView::layoutWidgets()
     mScrollView->setVisibleVScroll(true);
     mScrollView->setVisibleHScroll(true);
     dragArea->setSize(size);
+
+    //TODO: this should probably keep track of the index properly
+    //      ensure the tooltips display correctly 
+    if (count > 0 )
+    {
+        if (mLastIndex < count)
+        {
+            ItemListWidget* w = dynamic_cast<ItemListWidget*>(dragArea->getChildAt(mLastIndex));
+            //w->setStateFocused(true);
+        }
+    }
+
 }
 
 void ItemView::update()
@@ -157,6 +170,8 @@ void ItemView::onItemFocused(ItemListWidget* item)
         auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
         if (item != w)
             w->setStateFocused(false);
+        else 
+            mLastIndex = i;
     }
     MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(item);
     eventItemFocused(item);
@@ -170,6 +185,7 @@ void ItemView::resetScrollBars()
 void ItemView::onSelectedItem(MyGUI::Widget *sender)
 {
     ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+    mLastIndex = index;
     eventItemClicked(index);
 }
 

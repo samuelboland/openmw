@@ -130,6 +130,7 @@ namespace MWGui
 
     void SpellWindow::onCategoryFilterChanged(MyGUI::Widget* _sender)
     {
+        setTitle(_sender->getUserString("Title"));
         if (_sender == mAllButton)
             mSortModel->setCategory(SpellModel::Category_All);
         if (_sender == mPowersButton)
@@ -233,6 +234,7 @@ namespace MWGui
 
     void SpellWindow::onOpen()
     {
+        setTitle(mAllButton->getUserString("Title"));
         // Reset the filter focus when opening the window
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)

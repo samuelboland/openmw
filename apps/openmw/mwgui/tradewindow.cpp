@@ -148,8 +148,8 @@ namespace MWGui
 
         updateLabels();
 
-        setTitle(actor.getClass().getName(actor));
-
+        //setTitle(actor.getClass().getName(actor));
+        setTitle(mAllButton->getUserString("Title"));
         onFilterChanged(mAllButton);
         mFilterEdit->setCaption("");
     }
@@ -174,6 +174,7 @@ namespace MWGui
 
     void TradeWindow::onFilterChanged(MyGUI::Widget* _sender)
     {
+        setTitle(_sender->getUserString("Title"));
         if (_sender == mAllButton)
             mSortModel->setCategory(SortFilterItemModel::Category_All);
         else if (_sender == mWeaponButton)

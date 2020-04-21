@@ -4,6 +4,7 @@
 #include <MyGUI_ImageBox.h>
 #include <MyGUI_RenderManager.h>
 #include <MyGUI_TextBox.h>
+#include <MyGUI_InputManager.h>
 #include <MyGUI_LanguageManager.h>
 #include <MyGUI_Colour.h>
 
@@ -155,15 +156,12 @@ namespace MWGui
                 
                 x+= size;            
                 
-                MyGUI::TextBox* tb = mItem->getParent()->createWidget<MyGUI::TextBox>("",
+                Gui::AutoSizedTextBox* tb = mItem->getParent()->createWidget<Gui::AutoSizedTextBox>("SandText",
                     MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
-                tb->setCaption("(" + MyGUI::utility::toString(count) + ")");
+                tb->setCaption(" (" + MyGUI::utility::toString(count) + ") ");
                 tb->setTextAlign(MyGUI::Align::Left);
-                tb->setSize(tb->getTextSize().width+8
-                            ,MWBase::Environment::get().getWindowManager()->getFontHeight()+2);
-                tb->setTextColour(MyGUI::Colour(0.505, 0.105, 0.078)); 
+                tb->setTextColour(MyGUI::Colour(0.408, 0.105, 0.078)); 
                 tb->setNeedMouseFocus(false);
-
                 x+= tb->getWidth();
             }
         }
@@ -214,19 +212,18 @@ namespace MWGui
         {
             MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
-            mName->setStateSelected(true);
             mOverlay->setVisible(true);
         }
         else 
         {
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
-            mName->setStateSelected(false);
             mOverlay->setVisible(false);
         }
     }
 
     void ItemListWidget::onMouseSetFocus(MyGUI::Widget *_old) 
     {
+        MWBase::Environment::get().getWindowManager()->setKeyTooltip(true);
         setStateFocused(true);
         Base::onMouseSetFocus(_old);
         eventItemFocused(this);
@@ -234,6 +231,7 @@ namespace MWGui
 
     void ItemListWidget::onMouseLostFocus(MyGUI::Widget *_new)
     {
+        MWBase::Environment::get().getWindowManager()->setKeyTooltip(false);
         setStateFocused(false);
         Base::onMouseLostFocus(_new);
     }

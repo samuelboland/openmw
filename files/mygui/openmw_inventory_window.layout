@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <MyGUI type="Layout">
-    <Widget type="Window" skin="MW_Window_Pinnable" layer="Windows" position="0 0 800 300" name="_Main">
+    <Widget type="Window" skin="MW_Window_Pinnable" layer="Windows" position="0 0 800 400" name="_Main">
         <Property key="MinSize" value="250 100"/>
     
-    <Widget type="Widget" skin="" position="0 0 212 300" align="Stretch" name="LeftPane">
-        <Widget type="Widget" skin="" position="8 0 206 300" align="Stretch" name="Avatar">
+    <Widget type="Widget" skin="" position="0 0 212 400" align="Stretch" name="LeftPane">
+        <Widget type="Widget" skin="" position="8 0 206 400" align="Stretch" name="Avatar">
             <Widget type="ImageBox" skin="ImageBox" position="3 3 206 300" align="Stretch" name="AvatarImage">
                 <UserString key="ToolTipType" value="AvatarItemSelection"/>
                 <Property key="NeedMouse" value="true"/>
                 <Property key="NeedKey" value="true"/>
             </Widget>
         </Widget>
-        <Widget type="EditBox" skin="SandBrightText" position="10 0 190 300" align="Bottom HStretch" name="Description">
+        <Widget type="EditBox" skin="SandBrightText" position="10 0 190 400" align="Bottom HStretch" name="Description">
                 <Property key="TextAlign" value="Center"/>
                 <Property key="EditWordWrap" value="true"/>
                 <Property key="NeedMouse" value="false"/>
                 <Property key="NeedKey" value="false"/>
                 <Property key="TextShadow" value="true"/>
-                <Property key="TextShadowColour" value="0.2 0.2 0.2"/>
+                <Property key="TextShadowColour" value="0.1 0.1 0.1"/>
         </Widget>
-=    </Widget>
+    </Widget>
 
     <Widget type="Widget" skin="" position="232 0 568 300" align="Stretch" name="RightPane">
         <!-- Categories -->
@@ -37,60 +37,70 @@
                 <Property key="ImageNormal" value="textures\ui\all_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\all_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="All"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="WeaponButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\weapon_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\weapon_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\weapon_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Weapons"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="ArmorButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\armor_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\armor_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\armor_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Armors"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="ClothButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\cloth_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\cloth_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\cloth_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Clothing"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="PotionButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\potion_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\potion_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\potion_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Potions"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="IngredientButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\ingredient_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\ingredient_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\ingredient_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Ingredients"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="MagicButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\magic_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\magic_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\magic_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Magic Items"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="BookButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\book_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\book_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\book_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Books"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="ToolButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\tool_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\tool_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\tool_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Tools"/>
             </Widget>
             <Widget type="ImagePushButton" skin="ImageBox" name="MiscButton" align="Left VCenter">
                 <Property key="ImageHighlighted" value="textures\ui\misc_over.dds"/>
                 <Property key="ImageNormal" value="textures\ui\misc_idle.dds"/>
                 <Property key="ImagePushed" value="textures\ui\misc_pressed.dds"/>
                 <Property key="NeedKey" value="false"/>
+                <UserString key="Title" value="Miscellaneous"/>
             </Widget>
         </Widget>
 

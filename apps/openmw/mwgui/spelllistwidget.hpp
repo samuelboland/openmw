@@ -61,6 +61,16 @@ namespace MWGui
 
             mName->setCaption(spell.mName + captionSuffix);
             mName->setTextAlign(MyGUI::Align::Left);
+
+            if (spell.mSelected)
+            {
+                int x = mName->getCoord().left + mName->getTextSize().width+8;
+                static constexpr int size = 16;
+                MyGUI::ImageBox* t = mItem->getParent()->createWidget<MyGUI::ImageBox>("ImageBox",
+                    MyGUI::IntCoord(x,10,size,size), MyGUI::Align::Left | MyGUI::Align::VCenter);
+                t->setImageTexture("textures\\ui\\enchanted.dds");
+                t->setNeedMouseFocus(false);
+            }
             
             mSchool->setVisible(false);
 

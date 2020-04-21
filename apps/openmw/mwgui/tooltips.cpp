@@ -129,6 +129,7 @@ namespace MWGui
                     tooltipSize = getToolTipViaPtr(mFocusObject.getRefData().getCount(), true);
 
                 MyGUI::IntPoint tooltipPosition = MyGUI::InputManager::getInstance().getMousePosition();
+
                 position(tooltipPosition, tooltipSize, viewSize);
 
                 setCoord(tooltipPosition.left, tooltipPosition.top, tooltipSize.width, tooltipSize.height);
@@ -153,6 +154,11 @@ namespace MWGui
                     return;
 
                 MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getMouseFocusWidget();
+
+                // show tooltips with keyboard navigation
+                if (MWBase::Environment::get().getWindowManager()->isKeyTooltip())
+                    focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
+                
                 if (focus == 0)
                     return;
 

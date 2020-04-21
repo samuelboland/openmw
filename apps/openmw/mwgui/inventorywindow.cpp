@@ -24,8 +24,6 @@
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 
-#include "../mwgui/hud.hpp"
-
 #include "../mwworld/inventorystore.hpp"
 #include "../mwworld/class.hpp"
 #include "../mwworld/actionequip.hpp"
@@ -59,6 +57,31 @@ namespace
 
 namespace MWGui
 {
+
+    /**
+     * Makes it possible to use ItemModel::moveItem to move an item from an inventory to the world.
+     */
+    class WorldItemModel : public ItemModel
+    {
+    public:
+        WorldItemModel(){}
+        virtual ~WorldItemModel() {}
+        virtual MWWorld::Ptr copyItem (const ItemStack& item, size_t count, bool /*allowAutoEquip*/)
+        {
+            MWBase::World* world = MWBase::Environment::get().getWorld();
+
+            MWWorld::Ptr dropped= world->dropObjectOnGround(world->getPlayerPtr(), item.mBase, 1);
+            dropped.getCellRef().setOwner("");
+
+            return dropped;
+        }
+
+        virtual void removeItem (const ItemStack& item, size_t count) { throw std::runtime_error("removeItem not implemented"); }
+        virtual ModelIndex getIndex (ItemStack item) { throw std::runtime_error("getIndex not implemented"); }
+        virtual void update() {}
+        virtual size_t getItemCount() { return 0; }
+        virtual ItemStack getItem (ModelIndex index) { throw std::runtime_error("getItem not implemented"); }
+    };
 
     InventoryWindow::InventoryWindow(DragAndDrop* dragAndDrop, osg::Group* parent, Resource::ResourceSystem* resourceSystem)
         : WindowPinnableBase("openmw_inventory_window.layout")
@@ -464,7 +487,7 @@ namespace MWGui
         int index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
         auto model = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).second;
         auto item = model->getItem(index);
-        if (key == MyGUI::KeyCode::X)
+        if (key == MyGUI::KeyCode::X) // use/activate 
         {
             mDrop = Settings::Manager::getBool("leftclick activates", "Input"); 
             if (!mDrop)
@@ -487,6 +510,47 @@ namespace MWGui
             }
             else 
                 onItemSelected(index);
+        }
+        else if (key == MyGUI::KeyCode::R) // drop at ground 
+        {
+
+
+            // Can't drop conjured items 
+            if (item.mFlags & ItemStack::Flag_Bound)
+                return;
+
+            MWWorld::InventoryStore& invStore = mPtr.getClass().getInventoryStore(mPtr);
+
+            // If we unequip weapon during attack, it can lead to unexpected behaviour
+            if (MWBase::Environment::get().getMechanicsManager()->isAttackingOrSpell(mPtr))
+            {
+                bool isWeapon = item.mBase.getTypeName() == typeid(ESM::Weapon).name();
+                if (isWeapon && invStore.isEquipped(item.mBase))
+                {
+                    MWBase::Environment::get().getWindowManager()->messageBox("#{sCantEquipWeapWarning}");
+                    return;
+                }
+            }
+
+            auto sound = item.mBase.getClass().getDownSoundId(item.mBase);
+            MWBase::Environment::get().getWindowManager()->playSound(sound);
+
+            auto world = MWBase::Environment::get().getWorld();
+
+            world->breakInvisibility(MWMechanics::getPlayer());
+            
+            mSelectedItem = index;
+            ensureSelectedItemUnequipped(1);
+
+            WorldItemModel dropped;
+            model->moveItem(model->getItem(index), 1, &dropped);
+            model->update();
+            mItemView->update();
+
+            if (model->getItemCount() == 0)
+                resetAvatar();
+
+            notifyContentChanged();
         }
     }
 
@@ -694,6 +758,7 @@ namespace MWGui
 
     void InventoryWindow::onOpen()
     {   
+        setTitle(mAllButton->getUserString("Title"));
         // Reset the filter focus when opening the window
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)
@@ -884,6 +949,8 @@ namespace MWGui
     {
         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
         resetAvatar();
+
+        setTitle(_sender->getUserString("Title"));
 
         if (_sender == mAllButton)
             mSortModel->setCategory(SortFilterItemModel::Category_All);

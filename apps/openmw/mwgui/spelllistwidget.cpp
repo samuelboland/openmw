@@ -69,6 +69,7 @@ namespace MWGui
 
     void SpellListWidget::onMouseSetFocus(MyGUI::Widget *_old) 
     {
+        MWBase::Environment::get().getWindowManager()->setKeyTooltip(true);
         setStateFocused(true);
         Base::onMouseSetFocus(_old);
         eventItemFocused(this);
@@ -76,6 +77,7 @@ namespace MWGui
 
     void SpellListWidget::onMouseLostFocus(MyGUI::Widget *_new)
     {
+        MWBase::Environment::get().getWindowManager()->setKeyTooltip(false);
         setStateFocused(false);
         Base::onMouseLostFocus(_new);
     }

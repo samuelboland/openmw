@@ -215,6 +215,10 @@ namespace MWBase
             /// update activated quick key state (if action executing was delayed for some reason)
             virtual void updateActivatedQuickKey () = 0;
 
+            // whether or not to use key focu or mouse focus widget for tooltips 
+            virtual void setKeyTooltip(bool enable) = 0;
+            virtual bool isKeyTooltip() const = 0;
+
             virtual std::string getSelectedSpell() = 0;
             virtual void setSelectedSpell(const std::string& spellId, int successChancePercent) = 0;
             virtual void setSelectedEnchantItem(const MWWorld::Ptr& item) = 0;

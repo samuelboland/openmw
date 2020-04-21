@@ -242,6 +242,10 @@ namespace MWGui
     /// update activated quick key state (if action executing was delayed for some reason)
     virtual void updateActivatedQuickKey ();
 
+    // whether or not to use key focu or mouse focus widget for tooltips 
+    virtual void setKeyTooltip(bool enable);
+    virtual bool isKeyTooltip() const;
+
     virtual std::string getSelectedSpell() { return mSelectedSpell; }
     virtual void setSelectedSpell(const std::string& spellId, int successChancePercent);
     virtual void setSelectedEnchantItem(const MWWorld::Ptr& item);
@@ -462,6 +466,7 @@ namespace MWGui
     bool mHudEnabled;
     bool mCursorVisible;
     bool mCursorActive;
+    bool mUseKeyTooltip;
 
     int mPlayerBounty;
 
