@@ -1,6 +1,14 @@
 0.47.0
 ------
 
+    Bug #1952: Incorrect particle lighting
+    Bug #3676: NiParticleColorModifier isn't applied properly
+    Bug #5358: ForceGreeting always resets the dialogue window completely
+    Bug #5363: Enchantment autocalc not always 0/1
+    Bug #5364: Script fails/stops if trying to startscript an unknown script
+    Bug #5367: Selecting a spell on an enchanted item per hotkey always plays the equip sound
+    Bug #5369: Spawnpoint in the Grazelands doesn't produce oversized creatures
+    Feature #5362: Show the soul gems' trapped soul in count dialog
 
 0.46.0
 ------
@@ -217,7 +225,7 @@
     Bug #5345: Dopey Necromancy does not work due to a missing quote
     Bug #5350: An attempt to launch magic bolt causes "AL error invalid value" error
     Bug #5352: Light source items' duration is decremented while they aren't visible
-    Feature #1774: Handle AvoidNode
+    Feature #1724: Handle AvoidNode
     Feature #2229: Improve pathfinding AI
     Feature #3025: Analogue gamepad movement controls
     Feature #3442: Default values for fallbacks from ini file

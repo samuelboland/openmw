@@ -31,6 +31,7 @@ files/windows/*.aps
 .vscode
 ## qt-creator
 CMakeLists.txt.user*
+.vs
 
 ## resources
 data

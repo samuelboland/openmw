@@ -196,6 +196,10 @@ if (USE_QT)
         processinvoker
         )
 
+    add_component_dir (misc
+        helpviewer
+        )
+
     if (DESIRED_QT_VERSION MATCHES 4)
         include(${QT_USE_FILE})
         QT4_WRAP_UI(ESM_UI_HDR ${ESM_UI})

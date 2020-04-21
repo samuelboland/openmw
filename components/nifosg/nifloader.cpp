@@ -457,7 +457,7 @@ namespace NifOsg
             {
                 const Nif::NiLODNode* niLodNode = static_cast<const Nif::NiLODNode*>(nifNode);
                 node = handleLodNode(niLodNode);
-                dataVariance = osg::Object::STATIC;
+                dataVariance = osg::Object::DYNAMIC;
                 break;
             }
             case Nif::RC_NiSwitchNode:
@@ -476,8 +476,8 @@ namespace NifOsg
             {
                 bool enabled = nifNode->flags & Nif::NiNode::Flag_ActiveCollision;
                 node = new CollisionSwitch(nifNode->trafo.toMatrix(), enabled);
-                dataVariance = osg::Object::STATIC;
-
+                // This matrix transform must not be combined with another matrix transform.
+                dataVariance = osg::Object::DYNAMIC;
                 break;
             }
             default:
@@ -1078,6 +1078,8 @@ namespace NifOsg
                 trans->addChild(toAttach);
                 parentNode->addChild(trans);
             }
+            // create partsys stateset in order to pass in ShaderVisitor like all other Drawables
+            partsys->getOrCreateStateSet();
         }
 
         void triCommonToGeometry(osg::Geometry *geometry, const std::vector<osg::Vec3f>& vertices, const std::vector<osg::Vec3f>& normals, const std::vector<std::vector<osg::Vec2f>>& uvlist, const std::vector<osg::Vec4f>& colors, const std::vector<unsigned int>& boundTextures, const std::string& name)
@@ -1705,7 +1707,8 @@ namespace NifOsg
         {
             osg::StateSet* stateset = node->getOrCreateStateSet();
 
-            int specFlags = 0; // Specular is disabled by default, even if there's a specular color in the NiMaterialProperty
+            // Specular lighting is enabled by default, but there's a quirk...
+            int specFlags = 1;
             osg::ref_ptr<osg::Material> mat (new osg::Material);
             mat->setColorMode(hasVertexColors ? osg::Material::AMBIENT_AND_DIFFUSE : osg::Material::OFF);
 
@@ -1723,6 +1726,7 @@ namespace NifOsg
                 {
                 case Nif::RC_NiSpecularProperty:
                 {
+                    // Specular property can turn specular lighting off.
                     specFlags = property->flags;
                     break;
                 }
@@ -1806,16 +1810,9 @@ namespace NifOsg
                 }
             }
 
-            if (specFlags == 0)
+            // While NetImmerse and Gamebryo support specular lighting, Morrowind has its support disabled.
+            if (mVersion <= Nif::NIFFile::NIFVersion::VER_MW || specFlags == 0)
                 mat->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4f(0.f,0.f,0.f,0.f));
-
-            // Particles don't have normals, so can't be diffuse lit.
-            if (particleMaterial)
-            {
-                // NB ignoring diffuse.a()
-                mat->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4f(0,0,0,1));
-                mat->setColorMode(osg::Material::AMBIENT);
-            }
 
             if (lightmode == 0)
             {
