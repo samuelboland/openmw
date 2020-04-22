@@ -1,6 +1,7 @@
 #include "maindialog.hpp"
 
 #include <components/version/version.hpp>
+#include <components/misc/helpviewer.hpp>
 
 #include <QDate>
 #include <QMessageBox>
@@ -54,11 +55,15 @@ Launcher::MainDialog::MainDialog(QWidget *parent)
     iconWidget->setCurrentRow(0);
     iconWidget->setFlow(QListView::LeftToRight);
 
+    QPushButton *helpButton = new QPushButton(tr("Help"));
     QPushButton *playButton = new QPushButton(tr("Play"));
+    buttonBox->button(QDialogButtonBox::Close)->setText(tr("Close"));
+    buttonBox->addButton(helpButton, QDialogButtonBox::HelpRole);
     buttonBox->addButton(playButton, QDialogButtonBox::AcceptRole);
 
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(close()));
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(play()));
+    connect(buttonBox, SIGNAL(helpRequested()), this, SLOT(help()));
 
     // Remove what's this? button
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -115,6 +120,10 @@ void Launcher::MainDialog::createIcons()
 
 void Launcher::MainDialog::createPages()
 {
+    // Avoid creating the widgets twice
+    if (pagesWidget->count() != 0)
+        return;
+
     mPlayPage = new PlayPage(this);
     mDataFilesPage = new DataFilesPage(mCfgMgr, mGameSettings, mLauncherSettings, this);
     mGraphicsPage = new GraphicsPage(mCfgMgr, mEngineSettings, this);
@@ -165,18 +174,20 @@ Launcher::FirstRunDialogResult Launcher::MainDialog::showFirstRunDialog()
         QAbstractButton *skipButton =
                 msgBox.addButton(tr("Skip"), QMessageBox::RejectRole);
 
-        Q_UNUSED(skipButton); // Surpress compiler unused warning
-
         msgBox.exec();
 
         if (msgBox.clickedButton() == wizardButton)
         {
-            if (!mWizardInvoker->startProcess(QLatin1String("openmw-wizard"), false)) {
-                return FirstRunDialogResultFailure;
-            } else {
+            if (mWizardInvoker->startProcess(QLatin1String("openmw-wizard"), false))
                 return FirstRunDialogResultWizard;
-            }
         }
+        else if (msgBox.clickedButton() == skipButton)
+        {
+            // Don't bother setting up absent game data.
+            if (setup())
+                return FirstRunDialogResultContinue;
+        }
+        return FirstRunDialogResultFailure;
     }
 
     if (!setup() || !setupGameData()) {
@@ -383,22 +394,23 @@ bool Launcher::MainDialog::setupGameData()
         QMessageBox msgBox;
         msgBox.setWindowTitle(tr("Error detecting Morrowind installation"));
         msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setStandardButtons(QMessageBox::Cancel);
+        msgBox.setStandardButtons(QMessageBox::NoButton);
         msgBox.setText(tr("<br><b>Could not find the Data Files location</b><br><br> \
                                    The directory containing the data files was not found."));
 
         QAbstractButton *wizardButton =
                 msgBox.addButton(tr("Run &Installation Wizard..."), QMessageBox::ActionRole);
+        QAbstractButton *skipButton =
+                msgBox.addButton(tr("Skip"), QMessageBox::RejectRole);
+
+        Q_UNUSED(skipButton); // Supress compiler unused warning
 
         msgBox.exec();
 
         if (msgBox.clickedButton() == wizardButton)
         {
-            if (!mWizardInvoker->startProcess(QLatin1String("openmw-wizard"), false)) {
+            if (!mWizardInvoker->startProcess(QLatin1String("openmw-wizard"), false))
                 return false;
-            } else {
-                return true;
-            }
         }
     }
 
@@ -581,7 +593,7 @@ void Launcher::MainDialog::wizardFinished(int exitCode, QProcess::ExitStatus exi
     // HACK: Ensure the pages are created, else segfault
     setup();
 
-    if (reloadSettings())
+    if (setupGameData() && reloadSettings())
         show();
 }
 
@@ -605,4 +617,9 @@ void Launcher::MainDialog::play()
 
     if (mGameInvoker->startProcess(QLatin1String("openmw"), true))
         return qApp->quit();
+}
+
+void Launcher::MainDialog::help()
+{
+    Misc::HelpViewer::openHelp("reference/index.html");
 }

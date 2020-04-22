@@ -225,7 +225,6 @@ private:
     float mMinSize;
 
     osg::ref_ptr<RootNode> mRootNode;
-    osg::ref_ptr<LodCallback> mLodCallback;
 };
 
 QuadTreeWorld::QuadTreeWorld(osg::Group *parent, osg::Group *compileRoot, Resource::ResourceSystem *resourceSystem, Storage *storage, int nodeMask, int preCompileMask, int borderMask, int compMapResolution, float compMapLevel, float lodFactor, int vertexLodMod, float maxCompGeometrySize)
@@ -512,11 +511,17 @@ void QuadTreeWorld::accept(osg::NodeVisitor &nv)
             if (!lineIntersector)
                 throw std::runtime_error("Cannot update QuadTreeWorld: node visitor is not LineSegmentIntersector");
 
-            osg::Matrix matrix = osg::Matrix::identity();
             if (lineIntersector->getCoordinateFrame() == osgUtil::Intersector::CoordinateFrame::MODEL && iv->getModelMatrix() == 0)
-                matrix = lineIntersector->getTransformation(*iv, osgUtil::Intersector::CoordinateFrame::MODEL);
-            osg::ref_ptr<TerrainLineIntersector> terrainIntersector (new TerrainLineIntersector(lineIntersector, matrix));
-            mRootNode->intersect(vd, terrainIntersector);
+            {
+                TerrainLineIntersector terrainIntersector(lineIntersector);
+                mRootNode->intersect(vd, terrainIntersector);
+            }
+            else
+            {
+                osg::Matrix matrix(lineIntersector->getTransformation(*iv, lineIntersector->getCoordinateFrame()));
+                TerrainLineIntersector terrainIntersector(lineIntersector, matrix);
+                mRootNode->intersect(vd, terrainIntersector);
+            }
         }
     }
 

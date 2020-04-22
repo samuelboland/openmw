@@ -62,6 +62,8 @@ namespace
     // Collect all properties affecting the given drawable that should be handled on drawable basis rather than on the node hierarchy above it.
     void collectDrawableProperties(const Nif::Node* nifNode, std::vector<const Nif::Property*>& out)
     {
+        if (nifNode->parent)
+            collectDrawableProperties(nifNode->parent, out);
         const Nif::PropertyList& props = nifNode->props;
         for (size_t i = 0; i <props.length();++i)
         {
@@ -80,8 +82,6 @@ namespace
                 }
             }
         }
-        if (nifNode->parent)
-            collectDrawableProperties(nifNode->parent, out);
     }
 
     // NodeCallback used to have a node always oriented towards the camera. The node can have translation and scale
@@ -167,6 +167,19 @@ namespace
 
 namespace NifOsg
 {
+    class CollisionSwitch : public osg::MatrixTransform
+    {
+    public:
+        CollisionSwitch(const osg::Matrixf& transformations, bool enabled) : osg::MatrixTransform(transformations)
+        {
+            setEnabled(enabled);
+        }
+
+        void setEnabled(bool enabled)
+        {
+            setNodeMask(enabled ? ~0 : 0);
+        }
+    };
 
     bool Loader::sShowMarkers = false;
 
@@ -180,18 +193,31 @@ namespace NifOsg
         return sShowMarkers;
     }
 
+    unsigned int Loader::sHiddenNodeMask = 0;
+
+    void Loader::setHiddenNodeMask(unsigned int mask)
+    {
+        sHiddenNodeMask = mask;
+    }
+    unsigned int Loader::getHiddenNodeMask()
+    {
+        return sHiddenNodeMask;
+    }
+
     class LoaderImpl
     {
     public:
         /// @param filename used for warning messages.
-        LoaderImpl(const std::string& filename)
-            : mFilename(filename), mFirstRootTextureIndex(-1), mFoundFirstRootTexturingProperty(false)
+        LoaderImpl(const std::string& filename, unsigned int ver, unsigned int userver, unsigned int bethver)
+            : mFilename(filename), mVersion(ver), mUserVersion(userver), mBethVersion(bethver)
         {
 
         }
         std::string mFilename;
-        size_t mFirstRootTextureIndex;
-        bool mFoundFirstRootTexturingProperty;
+        unsigned int mVersion, mUserVersion, mBethVersion;
+
+        size_t mFirstRootTextureIndex = -1;
+        bool mFoundFirstRootTexturingProperty = false;
 
         static void loadKf(Nif::NIFFilePtr nif, KeyframeHolder& target)
         {
@@ -441,12 +467,10 @@ namespace NifOsg
             {
                 const Nif::NiLODNode* niLodNode = static_cast<const Nif::NiLODNode*>(nifNode);
                 node = handleLodNode(niLodNode);
-                dataVariance = osg::Object::STATIC;
+                dataVariance = osg::Object::DYNAMIC;
                 break;
             }
             case Nif::RC_NiSwitchNode:
-            case Nif::RC_NiTriShape:
-            case Nif::RC_NiTriStrips:
             case Nif::RC_NiAutoNormalParticles:
             case Nif::RC_NiRotatingParticles:
                 // Leaf nodes in the NIF hierarchy, so won't be able to dynamically attach children.
@@ -458,6 +482,14 @@ namespace NifOsg
             case Nif::RC_NiBillboardNode:
                 dataVariance = osg::Object::DYNAMIC;
                 break;
+            case Nif::RC_NiCollisionSwitch:
+            {
+                bool enabled = nifNode->flags & Nif::NiNode::Flag_ActiveCollision;
+                node = new CollisionSwitch(nifNode->trafo.toMatrix(), enabled);
+                // This matrix transform must not be combined with another matrix transform.
+                dataVariance = osg::Object::DYNAMIC;
+                break;
+            }
             default:
                 // The Root node can be created as a Group if no transformation is required.
                 // This takes advantage of the fact root nodes can't have additional controllers
@@ -550,8 +582,7 @@ namespace NifOsg
             if (nifNode->recType == Nif::RC_RootCollisionNode)
             {
                 skipMeshes = true;
-                // Leave mask for UpdateVisitor enabled
-                node->setNodeMask(0x1);
+                node->setNodeMask(Loader::getHiddenNodeMask());
             }
 
             // We can skip creating meshes for hidden nodes if they don't have a VisController that
@@ -565,8 +596,7 @@ namespace NifOsg
                 if (!hasVisController)
                     skipMeshes = true; // skip child meshes, but still create the child node hierarchy for animating collision shapes
 
-                // now hide this node, but leave the mask for UpdateVisitor enabled so that KeyframeController works
-                node->setNodeMask(0x1);
+                node->setNodeMask(Loader::getHiddenNodeMask());
             }
 
             if ((skipMeshes || hasMarkers) && isAnimated) // make sure the empty node is not optimized away so the physicssystem can find it.
@@ -614,8 +644,6 @@ namespace NifOsg
             if (composite->getNumControllers() > 0)
                 node->addUpdateCallback(composite);
 
-            // Note: NiTriShapes are not allowed to have KeyframeControllers (the vanilla engine just crashes when there is one).
-            // We can take advantage of this constraint for optimizations later.
             if (nifNode->recType != Nif::RC_NiTriShape && nifNode->recType != Nif::RC_NiTriStrips
                     && !nifNode->controller.empty() && node->getDataVariance() == osg::Object::DYNAMIC)
                 handleNodeControllers(nifNode, static_cast<osg::MatrixTransform*>(node.get()), animflags);
@@ -663,6 +691,8 @@ namespace NifOsg
                 if (ctrl->recType == Nif::RC_NiUVController)
                 {
                     const Nif::NiUVController *niuvctrl = static_cast<const Nif::NiUVController*>(ctrl.getPtr());
+                    if (niuvctrl->data.empty())
+                        continue;
                     const unsigned int uvSet = niuvctrl->uvSet;
                     std::set<int> texUnits;
                     // UVController should work only for textures which use a given UV Set, usually 0.
@@ -675,6 +705,17 @@ namespace NifOsg
                     osg::ref_ptr<UVController> uvctrl = new UVController(niuvctrl->data.getPtr(), texUnits);
                     setupController(niuvctrl, uvctrl, animflags);
                     composite->addController(uvctrl);
+                }
+                else if (ctrl->recType == Nif::RC_NiKeyframeController)
+                {
+                    const Nif::NiKeyframeController *key = static_cast<const Nif::NiKeyframeController*>(ctrl.getPtr());
+                    if(!key->data.empty())
+                    {
+                        osg::ref_ptr<KeyframeController> callback(new KeyframeController(key->data.getPtr()));
+
+                        setupController(key, callback, animflags);
+                        node->addUpdateCallback(callback);
+                    }
                 }
                 else if (ctrl->recType == Nif::RC_NiVisController)
                 {
@@ -719,13 +760,17 @@ namespace NifOsg
 
         void handleVisController(const Nif::NiVisController* visctrl, osg::Node* node, int animflags)
         {
-            osg::ref_ptr<VisController> callback(new VisController(visctrl->data.getPtr()));
+            if (visctrl->data.empty())
+                return;
+            osg::ref_ptr<VisController> callback(new VisController(visctrl->data.getPtr(), Loader::getHiddenNodeMask()));
             setupController(visctrl, callback, animflags);
             node->addUpdateCallback(callback);
         }
 
         void handleRollController(const Nif::NiRollController* rollctrl, osg::Node* node, int animflags)
         {
+            if (rollctrl->data.empty())
+                return;
             osg::ref_ptr<RollController> callback(new RollController(rollctrl->data.getPtr()));
             setupController(rollctrl, callback, animflags);
             node->addUpdateCallback(callback);
@@ -740,6 +785,8 @@ namespace NifOsg
                 if (ctrl->recType == Nif::RC_NiAlphaController)
                 {
                     const Nif::NiAlphaController* alphactrl = static_cast<const Nif::NiAlphaController*>(ctrl.getPtr());
+                    if (alphactrl->data.empty())
+                        continue;
                     osg::ref_ptr<AlphaController> osgctrl(new AlphaController(alphactrl->data.getPtr()));
                     setupController(alphactrl, osgctrl, animflags);
                     composite->addController(osgctrl);
@@ -747,12 +794,9 @@ namespace NifOsg
                 else if (ctrl->recType == Nif::RC_NiMaterialColorController)
                 {
                     const Nif::NiMaterialColorController* matctrl = static_cast<const Nif::NiMaterialColorController*>(ctrl.getPtr());
-                    // Two bits that correspond to the controlled material color.
-                    // 00: Ambient
-                    // 01: Diffuse
-                    // 10: Specular
-                    // 11: Emissive
-                    MaterialColorController::TargetColor targetColor = static_cast<MaterialColorController::TargetColor>((matctrl->flags >> 4) & 3);
+                    if (matctrl->data.empty())
+                        continue;
+                    auto targetColor = static_cast<MaterialColorController::TargetColor>(matctrl->targetColor);
                     osg::ref_ptr<MaterialColorController> osgctrl(new MaterialColorController(matctrl->data.getPtr(), targetColor));
                     setupController(matctrl, osgctrl, animflags);
                     composite->addController(osgctrl);
@@ -1042,6 +1086,8 @@ namespace NifOsg
                 trans->addChild(toAttach);
                 parentNode->addChild(trans);
             }
+            // create partsys stateset in order to pass in ShaderVisitor like all other Drawables
+            partsys->getOrCreateStateSet();
         }
 
         void triCommonToGeometry(osg::Geometry *geometry, const std::vector<osg::Vec3f>& vertices, const std::vector<osg::Vec3f>& normals, const std::vector<std::vector<osg::Vec2f>>& uvlist, const std::vector<osg::Vec4f>& colors, const std::vector<unsigned int>& boundTextures, const std::string& name)
@@ -1133,10 +1179,12 @@ namespace NifOsg
                     continue;
                 if(ctrl->recType == Nif::RC_NiGeomMorpherController)
                 {
-                    drawable = handleMorphGeometry(static_cast<const Nif::NiGeomMorpherController*>(ctrl.getPtr()), geom, parentNode, composite, boundTextures, animflags);
+                    const Nif::NiGeomMorpherController* nimorphctrl = static_cast<const Nif::NiGeomMorpherController*>(ctrl.getPtr());
+                    if (nimorphctrl->data.empty())
+                        continue;
+                    drawable = handleMorphGeometry(nimorphctrl, geom, parentNode, composite, boundTextures, animflags);
 
-                    osg::ref_ptr<GeomMorpherController> morphctrl = new GeomMorpherController(
-                                static_cast<const Nif::NiGeomMorpherController*>(ctrl.getPtr())->data.getPtr());
+                    osg::ref_ptr<GeomMorpherController> morphctrl = new GeomMorpherController(nimorphctrl->data.getPtr());
                     setupController(ctrl.getPtr(), morphctrl, animflags);
                     drawable->setUpdateCallback(morphctrl);
                     break;
@@ -1389,7 +1437,7 @@ namespace NifOsg
             return image;
         }
 
-        void handleTextureProperty(const Nif::NiTexturingProperty* texprop, osg::StateSet* stateset, SceneUtil::CompositeStateSetUpdater* composite, Resource::ImageManager* imageManager, std::vector<unsigned int>& boundTextures, int animflags)
+        void handleTextureProperty(const Nif::NiTexturingProperty* texprop, const std::string& nodeName, osg::StateSet* stateset, SceneUtil::CompositeStateSetUpdater* composite, Resource::ImageManager* imageManager, std::vector<unsigned int>& boundTextures, int animflags)
         {
             if (!boundTextures.empty())
             {
@@ -1423,7 +1471,7 @@ namespace NifOsg
                         }
                         default:
                         {
-                            Log(Debug::Info) << "Unhandled texture stage " << i << " in " << mFilename;
+                            Log(Debug::Info) << "Unhandled texture stage " << i << " on shape \"" << nodeName << "\" in " << mFilename;
                             continue;
                         }
                     }
@@ -1431,7 +1479,8 @@ namespace NifOsg
                     const Nif::NiTexturingProperty::Texture& tex = texprop->textures[i];
                     if(tex.texture.empty() && texprop->controller.empty())
                     {
-                        Log(Debug::Verbose) << "Texture layer " << i << " is in use but empty in " << mFilename;
+                        if (i == 0)
+                            Log(Debug::Warning) << "Base texture is in use but empty on shape \"" << nodeName << "\" in " << mFilename;
                         continue;
                     }
 
@@ -1495,6 +1544,10 @@ namespace NifOsg
                     {
                         // Set this texture to Off by default since we can't render it with the fixed-function pipeline
                         stateset->setTextureMode(texUnit, GL_TEXTURE_2D, osg::StateAttribute::OFF);
+                        osg::Matrix2 bumpMapMatrix(texprop->bumpMapMatrix.x(), texprop->bumpMapMatrix.y(),
+                                                   texprop->bumpMapMatrix.z(), texprop->bumpMapMatrix.w());
+                        stateset->addUniform(new osg::Uniform("bumpMapMatrix", bumpMapMatrix));
+                        stateset->addUniform(new osg::Uniform("envMapLumaBias", texprop->envMapLumaBias));
                     }
                     else if (i == Nif::NiTexturingProperty::DecalTexture)
                     {
@@ -1518,7 +1571,7 @@ namespace NifOsg
                         texture2d->setName("diffuseMap");
                         break;
                     case Nif::NiTexturingProperty::BumpTexture:
-                        texture2d->setName("normalMap");
+                        texture2d->setName("bumpMap");
                         break;
                     case Nif::NiTexturingProperty::GlowTexture:
                         texture2d->setName("emissiveMap");
@@ -1619,7 +1672,7 @@ namespace NifOsg
             {
                 const Nif::NiTexturingProperty* texprop = static_cast<const Nif::NiTexturingProperty*>(property);
                 osg::StateSet* stateset = node->getOrCreateStateSet();
-                handleTextureProperty(texprop, stateset, composite, imageManager, boundTextures, animflags);
+                handleTextureProperty(texprop, node->getName(), stateset, composite, imageManager, boundTextures, animflags);
                 break;
             }
             // unused by mw
@@ -1662,7 +1715,8 @@ namespace NifOsg
         {
             osg::StateSet* stateset = node->getOrCreateStateSet();
 
-            int specFlags = 0; // Specular is disabled by default, even if there's a specular color in the NiMaterialProperty
+            // Specular lighting is enabled by default, but there's a quirk...
+            int specFlags = 1;
             osg::ref_ptr<osg::Material> mat (new osg::Material);
             mat->setColorMode(hasVertexColors ? osg::Material::AMBIENT_AND_DIFFUSE : osg::Material::OFF);
 
@@ -1674,13 +1728,13 @@ namespace NifOsg
 
             int lightmode = 1;
 
-            for (std::vector<const Nif::Property*>::const_reverse_iterator it = properties.rbegin(); it != properties.rend(); ++it)
+            for (const Nif::Property* property : properties)
             {
-                const Nif::Property* property = *it;
                 switch (property->recType)
                 {
                 case Nif::RC_NiSpecularProperty:
                 {
+                    // Specular property can turn specular lighting off.
                     specFlags = property->flags;
                     break;
                 }
@@ -1764,16 +1818,9 @@ namespace NifOsg
                 }
             }
 
-            if (specFlags == 0)
+            // While NetImmerse and Gamebryo support specular lighting, Morrowind has its support disabled.
+            if (mVersion <= Nif::NIFFile::NIFVersion::VER_MW || specFlags == 0)
                 mat->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4f(0.f,0.f,0.f,0.f));
-
-            // Particles don't have normals, so can't be diffuse lit.
-            if (particleMaterial)
-            {
-                // NB ignoring diffuse.a()
-                mat->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4f(0,0,0,1));
-                mat->setColorMode(osg::Material::AMBIENT);
-            }
 
             if (lightmode == 0)
             {
@@ -1824,13 +1871,13 @@ namespace NifOsg
 
     osg::ref_ptr<osg::Node> Loader::load(Nif::NIFFilePtr file, Resource::ImageManager* imageManager)
     {
-        LoaderImpl impl(file->getFilename());
+        LoaderImpl impl(file->getFilename(), file->getVersion(), file->getUserVersion(), file->getBethVersion());
         return impl.load(file, imageManager);
     }
 
     void Loader::loadKf(Nif::NIFFilePtr kf, KeyframeHolder& target)
     {
-        LoaderImpl impl(kf->getFilename());
+        LoaderImpl impl(kf->getFilename(), kf->getVersion(), kf->getUserVersion(), kf->getBethVersion());
         impl.loadKf(kf, target);
     }
 

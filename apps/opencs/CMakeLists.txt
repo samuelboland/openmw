@@ -89,7 +89,7 @@ opencs_units (view/render
     scenewidget worldspacewidget pagedworldspacewidget unpagedworldspacewidget
     previewwidget editmode instancemode instanceselectionmode instancemovemode
     orbitcameramode pathgridmode selectionmode pathgridselectionmode cameracontroller
-    cellwater terraintexturemode actor terrainselection terrainshapemode
+    cellwater terraintexturemode actor terrainselection terrainshapemode brushdraw
     )
 
 opencs_units_noqt (view/render
@@ -266,5 +266,5 @@ endif (MSVC)
 
 
 if(APPLE)
-    INSTALL(TARGETS openmw-cs BUNDLE DESTINATION "." COMPONENT BUNDLE)
+    INSTALL(TARGETS openmw-cs BUNDLE DESTINATION "." COMPONENT Bundle)
 endif()

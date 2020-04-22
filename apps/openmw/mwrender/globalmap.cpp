@@ -458,7 +458,7 @@ namespace MWRender
         if (map.mImageData.empty())
             return;
 
-        Files::IMemStream istream(&map.mImageData[0], map.mImageData.size());
+        Files::IMemStream istream(map.mImageData.data(), map.mImageData.size());
 
         osgDB::ReaderWriter* readerwriter = osgDB::Registry::instance()->getReaderWriterForExtension("png");
         if (!readerwriter)
@@ -523,7 +523,7 @@ namespace MWRender
 
         if (srcBox == destBox && imageWidth == mWidth && imageHeight == mHeight)
         {
-            mOverlayImage->copySubImage(0, 0, 0, image);
+            mOverlayImage = image;
 
             requestOverlayTextureUpdate(0, 0, mWidth, mHeight, texture, true, false);
         }

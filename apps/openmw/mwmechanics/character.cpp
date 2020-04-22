@@ -576,6 +576,13 @@ void CharacterController::refreshMovementAnims(const std::string& weapShortGroup
         mCurrentMovement = movementAnimName;
         if(!mCurrentMovement.empty())
         {
+            if (resetIdle)
+            {
+                mAnimation->disable(mCurrentIdle);
+                mIdleState = CharState_None;
+                idle = CharState_None;
+            }
+
             // For non-flying creatures, MW uses the Walk animation to calculate the animation velocity
             // even if we are running. This must be replicated, otherwise the observed speed would differ drastically.
             std::string anim = mCurrentMovement;
@@ -608,16 +615,15 @@ void CharacterController::refreshMovementAnims(const std::string& weapShortGroup
                     // The first person anims don't have any velocity to calculate a speed multiplier from.
                     // We use the third person velocities instead.
                     // FIXME: should be pulled from the actual animation, but it is not presently loaded.
-                    mMovementAnimSpeed = (isSneaking() ? 33.5452f : (isRunning() ? 222.857f : 154.064f));
+                    bool sneaking = mMovementState == CharState_SneakForward || mMovementState == CharState_SneakBack
+                                 || mMovementState == CharState_SneakLeft    || mMovementState == CharState_SneakRight;
+                    mMovementAnimSpeed = (sneaking ? 33.5452f : (isRunning() ? 222.857f : 154.064f));
                     mMovementAnimationControlled = false;
                 }
             }
 
             mAnimation->play(mCurrentMovement, Priority_Movement, movemask, false,
                              1.f, "start", "stop", startpoint, ~0ul, true);
-
-            if (resetIdle)
-                mAnimation->disable(mCurrentIdle);
         }
         else
             mMovementState = CharState_None;
@@ -1656,6 +1662,7 @@ bool CharacterController::updateWeaponState(CharacterState& idle)
             mIdleState != CharState_IdleSneak && mIdleState != CharState_IdleSwim)
         {
             mAnimation->disable(mCurrentIdle);
+            mIdleState = CharState_None;
         }
 
         animPlaying = mAnimation->getInfo(mCurrentWeapon, &complete);
@@ -1773,23 +1780,25 @@ bool CharacterController::updateWeaponState(CharacterState& idle)
                         0, mAttackType+" min attack", mAttackType+" max attack", 0.999f, 0);
                 break;
             case UpperCharState_StartToMinAttack:
-            {
-                // If actor is already stopped preparing attack, do not play the "min attack -> max attack" part.
-                // Happens if the player did not hold the attack button.
-                // Note: if the "min attack"->"max attack" is a stub, "play" it anyway. Attack strength will be random.
-                float minAttackTime = mAnimation->getTextKeyTime(mCurrentWeapon+": "+mAttackType+" "+"min attack");
-                float maxAttackTime = mAnimation->getTextKeyTime(mCurrentWeapon+": "+mAttackType+" "+"max attack");
-                if (mAttackingOrSpell || minAttackTime == maxAttackTime)
-                {
-                    start = mAttackType+" min attack";
-                    stop = mAttackType+" max attack";
-                    mUpperBodyState = UpperCharState_MinAttackToMaxAttack;
-                    break;
-                }
-                playSwishSound(0.0f);
-            }
-            // Fall-through
             case UpperCharState_MaxAttackToMinHit:
+            {
+                if (mUpperBodyState == UpperCharState_StartToMinAttack)
+                {
+                    // If actor is already stopped preparing attack, do not play the "min attack -> max attack" part.
+                    // Happens if the player did not hold the attack button.
+                    // Note: if the "min attack"->"max attack" is a stub, "play" it anyway. Attack strength will be random.
+                    float minAttackTime = mAnimation->getTextKeyTime(mCurrentWeapon+": "+mAttackType+" "+"min attack");
+                    float maxAttackTime = mAnimation->getTextKeyTime(mCurrentWeapon+": "+mAttackType+" "+"max attack");
+                    if (mAttackingOrSpell || minAttackTime == maxAttackTime)
+                    {
+                        start = mAttackType+" min attack";
+                        stop = mAttackType+" max attack";
+                        mUpperBodyState = UpperCharState_MinAttackToMaxAttack;
+                        break;
+                    }
+                    playSwishSound(0.0f);
+                }
+
                 if(mAttackType == "shoot")
                 {
                     start = mAttackType+" min hit";
@@ -1802,6 +1811,7 @@ bool CharacterController::updateWeaponState(CharacterState& idle)
                 }
                 mUpperBodyState = UpperCharState_MinHitToHit;
                 break;
+            }
             case UpperCharState_MinHitToHit:
                 if(mAttackType == "shoot")
                 {
@@ -2241,7 +2251,7 @@ void CharacterController::update(float duration, bool animationOnly)
         if(movestate != CharState_None && !isTurning())
             clearAnimQueue();
 
-        if(mAnimQueue.empty() || inwater || sneak)
+        if(mAnimQueue.empty() || inwater || (sneak && mIdleState != CharState_SpecialIdle))
         {
             if (inwater)
                 idlestate = CharState_IdleSwim;
