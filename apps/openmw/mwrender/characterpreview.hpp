@@ -89,6 +89,7 @@ namespace MWRender
         int getSlotSelected(int posX, int posY);
 
         void setScale(double scale);
+        void trackballRotate(float x1,float y1,float x2,float y2);
         void ryp(double roll, double yaw, double pitch);
 
     protected:
@@ -101,6 +102,8 @@ namespace MWRender
         osg::ref_ptr<UpdateCameraCallback> mUpdateCameraCallback;
 
         MWWorld::Ptr mItem;
+
+        osg::Quat mRotation;
     };
 
     class RaceSelectionPreview : public CharacterPreview

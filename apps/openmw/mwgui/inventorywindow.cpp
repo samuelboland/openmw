@@ -62,11 +62,11 @@ namespace MWGui
     /**
      * Makes it possible to use ItemModel::moveItem to move an item from an inventory to the world.
      */
-    class WorldItemModel : public ItemModel
+    class ProxyWorldItemModel : public ItemModel
     {
     public:
-        WorldItemModel(){}
-        virtual ~WorldItemModel() {}
+        ProxyWorldItemModel(){}
+        virtual ~ProxyWorldItemModel() {}
         virtual MWWorld::Ptr copyItem (const ItemStack& item, size_t count, bool /*allowAutoEquip*/)
         {
             MWBase::World* world = MWBase::Environment::get().getWorld();
@@ -210,7 +210,7 @@ namespace MWGui
             mViewMode = View_Item;
             mPreview->setScale(mScale);
             mPreview->setItem(item->getPtr());
-            //mPreview->ryp(0.f,osg::DegreesToRadians(static_cast<double>(mYaw)),osg::DegreesToRadians(static_cast<double>(mPitch)));
+            mPreview->ryp(0.f,osg::DegreesToRadians(static_cast<double>(mYaw)),osg::DegreesToRadians(static_cast<double>(mPitch)));
             
             const auto ptr = item->getPtr();
         
@@ -262,8 +262,6 @@ namespace MWGui
         }
         else
             resetAvatar();
-
-        // we also need an onItemLostFocus to reset the showing of tooltips 
     }
 
     void InventoryWindow::onDragStart(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
@@ -274,6 +272,8 @@ namespace MWGui
 
     void InventoryWindow::onMouseWheel(MyGUI::Widget* _sender, int _rel)
     { 
+        if (mViewMode == View_Avatar) return;
+
         static constexpr float scaleMax = 1.18;
         static constexpr float scaleMin = 0.6;
 
@@ -297,18 +297,18 @@ namespace MWGui
 
     void InventoryWindow::onMouseDrag(MyGUI::Widget* _sender, int _left, int _top, MyGUI::MouseButton _id)
     {
-        if (_id != MyGUI::MouseButton::Left) return;
+        if (_id != MyGUI::MouseButton::Left || mViewMode == View_Avatar) return;
         
+        MyGUI::IntPoint pos = MyGUI::InputManager::getInstance().getMousePosition();
         MyGUI::IntPoint diff = MyGUI::IntPoint(_left, _top) - mLastDragPos;
-        //mPreview->ryp(osg::DegreesToRadians(static_cast<float>(mRoll)),
-        //                   osg::DegreesToRadians(static_cast<float>(mYaw)),
-        //                   osg::DegreesToRadians(static_cast<float>(mPitch)));
-        mPreview->trackballRotate(diff.left, diff.top);
-
+        mPreview->ryp(osg::DegreesToRadians(static_cast<float>(mRoll)),
+                           osg::DegreesToRadians(static_cast<float>(mYaw)),
+                           osg::DegreesToRadians(static_cast<float>(mPitch)));
+        
         if (mViewMode == View_Item)
         {
             mRoll += 0;
-            mPitch -= diff.top;
+            mPitch += diff.top;
             mRoll %= 360; 
             mPitch %= 360;
         }
@@ -544,7 +544,7 @@ namespace MWGui
             mSelectedItem = index;
             ensureSelectedItemUnequipped(1);
 
-            WorldItemModel dropped;
+            ProxyWorldItemModel dropped;
             model->moveItem(model->getItem(index), 1, &dropped);
             model->update();
             mItemView->update();
@@ -766,9 +766,6 @@ namespace MWGui
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
-
-        if (!mPtr.isEmpty())
-            updatePlayer();
 
         if (MWBase::Environment::get().getWindowManager()->getMode() != GM_Inventory)
         {

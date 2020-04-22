@@ -100,18 +100,6 @@ void ItemView::layoutWidgets()
     mScrollView->setVisibleVScroll(true);
     mScrollView->setVisibleHScroll(true);
     dragArea->setSize(size);
-
-    //TODO: this should probably keep track of the index properly
-    //      ensure the tooltips display correctly 
-    if (count > 0 )
-    {
-        if (mLastIndex < count)
-        {
-            ItemListWidget* w = dynamic_cast<ItemListWidget*>(dragArea->getChildAt(mLastIndex));
-            //w->setStateFocused(true);
-        }
-    }
-
 }
 
 void ItemView::update()
@@ -120,7 +108,7 @@ void ItemView::update()
         return;
 
     mModel->update();
-    
+
     while (mScrollView->getChildCount())
         MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
     while (mHeader->getChildCount())
@@ -142,7 +130,6 @@ void ItemView::update()
         mHeader->changeWidgetSkin("MW_ItemListHeader_Simple");
     else 
         mHeader->changeWidgetSkin("MW_ItemListHeader_All");
-
 
     for (ItemModel::ModelIndex i=0; i < static_cast<int>(mModel->getItemCount()); ++i)
     {
