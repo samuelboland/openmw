@@ -6,8 +6,12 @@
 
     <Widget type="ImageBox" skin="ImageBox" position="-71 0 728 398" align="Left Top" name="BookJacket">
 
-        <Widget type="ImageBox" skin="ImageBox" position="0 0 728 398" align="Left Top" name="JImage">
+        <Widget type="ImageBox" skin="ImageBox" position="0 0 728 398" align="Left Top">
+            <Property key="ImageTexture" value="textures\ui\book_overlay_detail.dds"/>
+            <Property key="Alpha" value="0.76"/>
         </Widget>
+
+        <Widget type="ImageBox" skin="ImageBox" position="0 0 728 398" align="Left Top" name="JImage"/>
 
         <Property key="ImageTexture" value="textures\ui\book_overlay.dds"/>
         

@@ -48,7 +48,7 @@ void ItemView::setModel(ItemModel *model)
     delete mModel;
     mModel = model;
 
-    update();
+    update(true);
 }
 
 void ItemView::initialiseOverride()
@@ -102,7 +102,7 @@ void ItemView::layoutWidgets()
     dragArea->setSize(size);
 }
 
-void ItemView::update()
+void ItemView::update(bool force)
 {
     if (!mModel)
         return;
@@ -114,24 +114,22 @@ void ItemView::update()
     // resizing, moving windows, and (less pronounced) when sliding with mouse. 
     // Instead, it seems to be with redrawing the necassary widgets. 
 
-    // This broke companion and inventory views
-    /* 
-    if (mScrollView->getChildCount() > 0 
-        && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
+    if (!force && mScrollView->getChildCount() > 0 
+            && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
     {
         bool needsUpdate = false;
         for (size_t i = 0; i < mModel->getItemCount(); i++)
         {
             auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
-            if (mModel->getItem(i) != w->getItemStack())
+            if (w == nullptr || mModel->getItem(i) != w->getItemStack())
             {
                 needsUpdate = true;
                 break;
             }
         }
-        if (!needsUpdate) return; 
-    }*/
-    
+        if (!needsUpdate)  return;
+    }
+
     while (mScrollView->getChildCount())
         MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
     while (mHeader->getChildCount())

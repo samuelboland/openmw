@@ -234,7 +234,7 @@ namespace MWClass
         {
             // display value in feet
             const float combatDistance = store.get<ESM::GameSetting>().find("fCombatDistance")->mValue.getFloat() * ref->mBase->mData.mReach;
-            text += MWGui::ToolTips::getWeightString(combatDistance / Constants::UnitsPerFoot, "#{sRange}");
+            text += "\n#{sRange}: " + MyGUI::utility::toString(combatDistance / Constants::UnitsPerFoot);
             text += " #{sFeet}";
         }
 

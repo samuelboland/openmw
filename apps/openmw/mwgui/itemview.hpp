@@ -39,7 +39,7 @@ namespace MWGui
         /// Fired when an icon gets mouse focus 
         EventHandle_Item eventItemFocused; 
 
-        void update();
+        void update(bool force = false);
 
         void resetScrollBars();
 
