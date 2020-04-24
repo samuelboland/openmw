@@ -44,7 +44,7 @@ namespace
 
         return leftId < rightId;
     }
-
+    /*
     double getCostChance(const MWGui::Spell& spell)
     {
         // TODO 
@@ -54,7 +54,7 @@ namespace
     {
         // TODO
     }
-
+    */
 }
 
 namespace MWGui
