@@ -111,16 +111,23 @@ void ItemView::update()
     
 
     // updating is costly here (TODO: optimize by using a multilistbox maybe?)
+    // note: update() itself is not causing bad performance with huge inventory size when 
+    // resizing, moving windows, and (less pronounced) when sliding with mouse. 
+    // Instead, it seems to be with redrawing the necassary widgets. 
     if (mScrollView->getChildCount() > 0 
         && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
     {
+        bool needsUpdate = false;
         for (size_t i = 0; i < mModel->getItemCount(); i++)
         {
             auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
             if (mModel->getItem(i) != w->getItemStack())
+            {
+                needsUpdate = true;
                 break;
+            }
         }
-        return; // no update required 
+        if (!needsUpdate) return; 
     }
     
     while (mScrollView->getChildCount())
