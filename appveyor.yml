@@ -2,7 +2,7 @@ version: "{build}"
 
 branches:
     only:
-        - master
+        - morro_ui
         - /openmw-.*$/
         - appveyor
 

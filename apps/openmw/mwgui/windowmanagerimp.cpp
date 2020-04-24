@@ -102,6 +102,9 @@
 #include "videowidget.hpp"
 #include "backgroundimage.hpp"
 #include "itemwidget.hpp"
+#include "itemlistwidget.hpp"
+#include "itemlistwidgetheader.hpp"
+#include "spelllistwidget.hpp"
 #include "screenfader.hpp"
 #include "debugwindow.hpp"
 #include "spellview.hpp"
@@ -177,6 +180,7 @@ namespace MWGui
       , mHudEnabled(true)
       , mCursorVisible(true)
       , mCursorActive(false)
+      , mUseKeyTooltip(false)
       , mPlayerBounty(-1)
       , mPlayerName()
       , mPlayerRaceId()
@@ -228,6 +232,9 @@ namespace MWGui
         ItemView::registerComponents();
         ItemChargeView::registerComponents();
         ItemWidget::registerComponents();
+        ItemListWidget::registerComponents();
+        ItemListWidgetHeader::registerComponents();
+        SpellListWidget::registerComponents();
         SpellView::registerComponents();
         Gui::registerAllWidgets();
 
@@ -488,7 +495,7 @@ namespace MWGui
         mGuiModeStates[GM_Scroll].mOpenSound = "scroll";
         mGuiModeStates[GM_Scroll].mCloseSound = "scroll";
 
-        mBookWindow = new BookWindow();
+        mBookWindow = new BookWindow(mResourceSystem);
         mWindows.push_back(mBookWindow);
         mGuiModeStates[GM_Book] = GuiModeState(mBookWindow);
         mGuiModeStates[GM_Book].mOpenSound = "book open";
@@ -1392,7 +1399,7 @@ namespace MWGui
 
         const ESM::Spell* spell = mStore->get<ESM::Spell>().find(spellId);
 
-        mSpellWindow->setTitle(spell->mName);
+        //mSpellWindow->setTitle(spell->mName);
     }
 
     void WindowManager::setSelectedEnchantItem(const MWWorld::Ptr& item)
@@ -1404,7 +1411,7 @@ namespace MWGui
 
         int chargePercent = static_cast<int>(item.getCellRef().getNormalizedEnchantmentCharge(ench->mData.mCharge) * 100);
         mHud->setSelectedEnchantItem(item, chargePercent);
-        mSpellWindow->setTitle(item.getClass().getName(item));
+        //mSpellWindow->setTitle(item.getClass().getName(item));
     }
 
     const MWWorld::Ptr &WindowManager::getSelectedEnchantItem() const
@@ -1421,7 +1428,7 @@ namespace MWGui
             durabilityPercent = static_cast<int>(item.getClass().getItemNormalizedHealth(item) * 100);
         }
         mHud->setSelectedWeapon(item, durabilityPercent);
-        mInventoryWindow->setTitle(item.getClass().getName(item));
+        //mInventoryWindow->setTitle(item.getClass().getName(item));
     }
 
     const MWWorld::Ptr &WindowManager::getSelectedWeapon() const
@@ -1439,14 +1446,14 @@ namespace MWGui
         if (player->getDrawState() == MWMechanics::DrawState_Spell)
             player->setDrawState(MWMechanics::DrawState_Nothing);
 
-        mSpellWindow->setTitle("#{sNone}");
+        //mSpellWindow->setTitle("#{sNone}");
     }
 
     void WindowManager::unsetSelectedWeapon()
     {
         mSelectedWeapon = MWWorld::Ptr();
         mHud->unsetSelectedWeapon();
-        mInventoryWindow->setTitle("#{sSkillHandtohand}");
+        //mInventoryWindow->setTitle("#{sSkillHandtohand}");
     }
 
     void WindowManager::getMousePosition(int &x, int &y)
@@ -1480,6 +1487,7 @@ namespace MWGui
     MWGui::CountDialog* WindowManager::getCountDialog() { return mCountDialog; }
     MWGui::ConfirmationDialog* WindowManager::getConfirmationDialog() { return mConfirmationDialog; }
     MWGui::TradeWindow* WindowManager::getTradeWindow() { return mTradeWindow; }
+    MWGui::QuickKeysMenu* WindowManager::getQuickKeysMenu() { return mQuickKeysMenu; }
 
     void WindowManager::useItem(const MWWorld::Ptr &item, bool bypassBeastRestrictions)
     {
@@ -1641,6 +1649,16 @@ namespace MWGui
     void WindowManager::activateQuickKey (int index)
     {
         mQuickKeysMenu->activateQuickKey(index);
+    }
+
+    void WindowManager::setKeyTooltip(bool enable)
+    {
+        mUseKeyTooltip = enable;
+    }
+
+    bool WindowManager::isKeyTooltip() const
+    {
+        return mUseKeyTooltip;
     }
 
     bool WindowManager::getSubtitlesEnabled ()

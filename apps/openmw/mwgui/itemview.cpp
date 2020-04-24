@@ -10,7 +10,17 @@
 #include <MyGUI_Button.h>
 
 #include "../mwworld/class.hpp"
+#include "../mwworld/inventorystore.hpp"
 
+#include "../mwbase/inputmanager.hpp"
+#include "../mwbase/windowmanager.hpp"
+#include "../mwbase/environment.hpp"
+
+#include "../mwmechanics/actorutil.hpp"
+
+#include "inventorywindow.hpp"
+#include "itemlistwidget.hpp"
+#include "itemlistwidgetheader.hpp"
 #include "itemmodel.hpp"
 #include "itemwidget.hpp"
 
@@ -19,7 +29,9 @@ namespace MWGui
 
 ItemView::ItemView()
     : mModel(nullptr)
+    , mLastIndex(0)
     , mScrollView(nullptr)
+    , mHeader(nullptr)
 {
 }
 
@@ -46,7 +58,9 @@ void ItemView::initialiseOverride()
     assignWidget(mScrollView, "ScrollView");
     if (mScrollView == nullptr)
         throw std::runtime_error("Item view needs a scroll view");
-
+    assignWidget(mHeader, "Header"); 
+    if (mHeader == nullptr)
+        throw std::runtime_error("Item view needs a header view");
     mScrollView->setCanvasAlign(MyGUI::Align::Left | MyGUI::Align::Top);
 }
 
@@ -55,34 +69,29 @@ void ItemView::layoutWidgets()
     if (!mScrollView->getChildCount())
         return;
 
-    int x = 0;
-    int y = 0;
     MyGUI::Widget* dragArea = mScrollView->getChildAt(0);
-    int maxHeight = mScrollView->getHeight();
+    int y = 0;
 
-    int rows = maxHeight/42;
-    rows = std::max(rows, 1);
-    bool showScrollbar = int(std::ceil(dragArea->getChildCount()/float(rows))) > mScrollView->getWidth()/42;
-    if (showScrollbar)
-        maxHeight -= 18;
+    int height = 0;
+    for (size_t i = 0; i < dragArea->getChildCount(); i++)
+        height += dragArea->getChildAt(i)->getHeight();
 
-    for (unsigned int i=0; i<dragArea->getChildCount(); ++i)
+    bool scrollVisible = height > mScrollView->getHeight();
+    int rightMargin = (scrollVisible) ? 45 :10;
+
+    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-rightMargin,36));
+
+    unsigned int count = dragArea->getChildCount();
+    int h = (count) ? dragArea->getChildAt(0)->getHeight() : 0; 
+
+    for (unsigned int i=0; i<count; ++i)
     {
-        MyGUI::Widget* w = dragArea->getChildAt(i);
-
-        w->setPosition(x, y);
-
-        y += 42;
-
-        if (y > maxHeight-42 && i < dragArea->getChildCount()-1)
-        {
-            x += 42;
-            y = 0;
-        }
+        dragArea->getChildAt(i)->setCoord(MyGUI::IntCoord(
+            0,y, dragArea->getWidth()-rightMargin, dragArea->getChildAt(0)->getHeight()));
+        y += h;
     }
-    x += 42;
 
-    MyGUI::IntSize size = MyGUI::IntSize(std::max(mScrollView->getSize().width, x), mScrollView->getSize().height);
+    MyGUI::IntSize size = MyGUI::IntSize(mScrollView->getSize().width,std::max(mScrollView->getSize().height, y));
 
     // Canvas size must be expressed with VScroll disabled, otherwise MyGUI would expand the scroll area when the scrollbar is hidden
     mScrollView->setVisibleVScroll(false);
@@ -95,41 +104,87 @@ void ItemView::layoutWidgets()
 
 void ItemView::update()
 {
-    while (mScrollView->getChildCount())
-        MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
-
     if (!mModel)
         return;
 
     mModel->update();
+    
+    // updating is costly here (TODO: optimize by using a multilistbox maybe?)
+    // note: update() itself is not causing bad performance with huge inventory size when 
+    // resizing, moving windows, and (less pronounced) when sliding with mouse. 
+    // Instead, it seems to be with redrawing the necassary widgets. 
+
+    // This broke companion and inventory views
+    /* 
+    if (mScrollView->getChildCount() > 0 
+        && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
+    {
+        bool needsUpdate = false;
+        for (size_t i = 0; i < mModel->getItemCount(); i++)
+        {
+            auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
+            if (mModel->getItem(i) != w->getItemStack())
+            {
+                needsUpdate = true;
+                break;
+            }
+        }
+        if (!needsUpdate) return; 
+    }*/
+    
+    while (mScrollView->getChildCount())
+        MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
+    while (mHeader->getChildCount())
+        MyGUI::Gui::getInstance().destroyWidget(mHeader->getChildAt(0)); 
 
     MyGUI::Widget* dragArea = mScrollView->createWidget<MyGUI::Widget>("",0,0,mScrollView->getWidth(),mScrollView->getHeight(),
                                                                        MyGUI::Align::Stretch);
     dragArea->setNeedMouseFocus(true);
     dragArea->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemView::onSelectedBackground);
     dragArea->eventMouseWheel += MyGUI::newDelegate(this, &ItemView::onMouseWheelMoved);
+    
+    int category = dynamic_cast<MWGui::SortFilterItemModel*>(mModel)->getCategory();  
 
-    for (ItemModel::ModelIndex i=0; i<static_cast<int>(mModel->getItemCount()); ++i)
+    if (category == MWGui::SortFilterItemModel::Category_Weapon)
+        mHeader->changeWidgetSkin("MW_ItemListHeader_Weapon");
+    else if (category == MWGui::SortFilterItemModel::Category_Armor)
+        mHeader->changeWidgetSkin("MW_ItemListHeader_Armor");
+    else if (category == MWGui::SortFilterItemModel::Category_Simple)
+        mHeader->changeWidgetSkin("MW_ItemListHeader_Simple");
+    else 
+        mHeader->changeWidgetSkin("MW_ItemListHeader_All");
+
+    for (ItemModel::ModelIndex i=0; i < static_cast<int>(mModel->getItemCount()); ++i)
     {
         const ItemStack& item = mModel->getItem(i);
+        ItemListWidget* itemWidget = dragArea->createWidget<ItemListWidget>("MW_ItemList",
+            MyGUI::IntCoord(0,0,mScrollView->getWidth(), 35), MyGUI::Align::HStretch | MyGUI::Align::Top);
 
-        ItemWidget* itemWidget = dragArea->createWidget<ItemWidget>("MW_ItemIcon",
-            MyGUI::IntCoord(0, 0, 42, 42), MyGUI::Align::Default);
+        itemWidget->setNeedKeyFocus(true);
+        itemWidget->setNeedMouseFocus(true);
+        itemWidget->setItem(item, category);
         itemWidget->setUserString("ToolTipType", "ItemModelIndex");
-        itemWidget->setUserData(std::make_pair(i, mModel));
-        ItemWidget::ItemState state = ItemWidget::None;
-        if (item.mType == ItemStack::Type_Barter)
-            state = ItemWidget::Barter;
-        if (item.mType == ItemStack::Type_Equipped)
-            state = ItemWidget::Equip;
-        itemWidget->setItem(item.mBase, state);
-        itemWidget->setCount(item.mCount);
-
+        itemWidget->setUserData(std::make_pair(i,mModel)); 
         itemWidget->eventMouseButtonClick += MyGUI::newDelegate(this, &ItemView::onSelectedItem);
         itemWidget->eventMouseWheel += MyGUI::newDelegate(this, &ItemView::onMouseWheelMoved);
+        itemWidget->eventKeyButtonPressed += MyGUI::newDelegate(this, &ItemView::onKeyButtonPressed);
+        itemWidget->eventItemFocused += MyGUI::newDelegate(this, &ItemView::onItemFocused);
     }
-
     layoutWidgets();
+}
+
+void ItemView::onItemFocused(ItemListWidget* item)
+{
+    for (size_t i = 0; i < mScrollView->getChildAt(0)->getChildCount();i++)
+    {
+        auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
+        if (item != w)
+            w->setStateFocused(false);
+        else 
+            mLastIndex = i;
+    }
+    MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(item);
+    eventItemFocused(item);
 }
 
 void ItemView::resetScrollBars()
@@ -140,7 +195,71 @@ void ItemView::resetScrollBars()
 void ItemView::onSelectedItem(MyGUI::Widget *sender)
 {
     ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+    mLastIndex = index;
     eventItemClicked(index);
+}
+
+void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyGUI::Char character)
+{
+    ItemModel::ModelIndex index = (*sender->getUserData<std::pair<ItemModel::ModelIndex, ItemModel*> >()).first;
+
+    if (key == MyGUI::KeyCode::ArrowUp || key == MyGUI::KeyCode::ArrowDown)
+    {
+        if (mScrollView->getChildCount() > 0 && mScrollView->getChildAt(0)->getChildCount() > 0)
+        {
+            int count = mScrollView->getChildAt(0)->getChildCount();
+            for (auto i = 0; i < count; i++)
+            {
+                ItemListWidget* w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
+                w->setStateFocused(false);
+            }
+
+            if (index < 0 || index > count - 1)
+                index = 0;
+
+            if (key == MyGUI::KeyCode::ArrowUp)
+            {
+                if (index < 2)
+                    index = 0;
+                else 
+                    index -= 1;
+            }
+            else
+            {
+                if (index >= count - 2)
+                    index = count - 1;
+                else 
+                    index += 1;
+            }
+
+            ItemListWidget* w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(index));
+            w->setStateFocused(true);
+            onItemFocused(w);
+
+            // make sure we adjust for scrolling, this is just an approximation 
+            if (mScrollView->isVisibleVScroll())
+            {
+                // how many items the scrollview can show 
+                int maxItems = mScrollView->getHeight() / w->getHeight();
+                int minIndex = std::ceil((-mScrollView->getViewOffset().top / static_cast<float>(w->getHeight())));
+                int maxIndex = minIndex + maxItems - 1;
+
+                // this is *not* a scroll-to, it assumes the item is already in view 
+                if (index > maxIndex)
+                {
+                    mScrollView->setViewOffset(MyGUI::IntPoint(0,static_cast<int>(mScrollView->getViewOffset().top - w->getHeight())));
+                }
+                else if (index < minIndex)
+                {
+                    mScrollView->setViewOffset(MyGUI::IntPoint(0,static_cast<int>(mScrollView->getViewOffset().top + w->getHeight())));
+                }
+            }
+        }
+    }
+    else if (key == MyGUI::KeyCode::Return)
+        eventItemClicked(index);
+
+    eventKeyButtonPressed(sender, key);
 }
 
 void ItemView::onSelectedBackground(MyGUI::Widget *sender)
@@ -150,10 +269,10 @@ void ItemView::onSelectedBackground(MyGUI::Widget *sender)
 
 void ItemView::onMouseWheelMoved(MyGUI::Widget *_sender, int _rel)
 {
-    if (mScrollView->getViewOffset().left + _rel*0.3f > 0)
+    if (mScrollView->getViewOffset().top + _rel*0.3f > 0)
         mScrollView->setViewOffset(MyGUI::IntPoint(0, 0));
     else
-        mScrollView->setViewOffset(MyGUI::IntPoint(static_cast<int>(mScrollView->getViewOffset().left + _rel*0.3f), 0));
+        mScrollView->setViewOffset(MyGUI::IntPoint(0,static_cast<int>(mScrollView->getViewOffset().top + _rel*0.3f)));
 }
 
 void ItemView::setSize(const MyGUI::IntSize &_value)

@@ -443,7 +443,7 @@ namespace MWGui
                 );
             }
             MWBase::Environment::get().getWindowManager()->getInventoryWindow()->rebuildAvatar();
-
+            
             MWBase::Environment::get().getWindowManager()->removeDialog(mRaceDialog);
             mRaceDialog = 0;
         }
