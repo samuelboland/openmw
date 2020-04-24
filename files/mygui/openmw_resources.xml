@@ -180,7 +180,7 @@
             <Widget type="HBox" skin="" position="0 0 0 35" align="Top HStretch" name="Item">
                 <Property key="NeedMouse" value="false"/>
                 <Widget type="Widget" skin="" position="0 0 16 0" align="VCenter Left" />
-                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 200 28" name="Name" align="Left Top ">
+                <Widget type="SharedStateButton" skin="ItemListTextButton" position="0 0 300 28" name="Name" align="Left Top ">
                     <Property key="TextAlign" value="Left VCenter" /> 
                     <Property key="Caption" value="-"/>
                     <Property key="Visible" value="true"/>

@@ -6,6 +6,7 @@ cmake_install.cmake
 Makefile
 makefile
 build*
+release*
 prebuilt
 
 ##windows build process

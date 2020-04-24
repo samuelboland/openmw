@@ -492,7 +492,7 @@ namespace MWGui
         mGuiModeStates[GM_Scroll].mOpenSound = "scroll";
         mGuiModeStates[GM_Scroll].mCloseSound = "scroll";
 
-        mBookWindow = new BookWindow();
+        mBookWindow = new BookWindow(mResourceSystem);
         mWindows.push_back(mBookWindow);
         mGuiModeStates[GM_Book] = GuiModeState(mBookWindow);
         mGuiModeStates[GM_Book].mOpenSound = "book open";

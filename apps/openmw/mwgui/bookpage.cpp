@@ -535,7 +535,7 @@ struct TypesetBookImpl::Typesetter : BookTypesetter
         if (mPartialWhitespace.empty() && mPartialWord.empty())
             return;
 
-        int fontHeight = MWBase::Environment::get().getWindowManager()->getFontHeight();
+        int fontHeight = 12;
         int space_width = 0;
         int word_width  = 0;
 

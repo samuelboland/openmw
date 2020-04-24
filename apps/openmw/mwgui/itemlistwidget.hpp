@@ -53,6 +53,8 @@ namespace MWGui
 
         MWWorld::Ptr getPtr();
 
+        ItemStack& getItemStack() { return mItemStack; }
+
     protected:
         void initialiseOverride() final;
 
@@ -78,6 +80,7 @@ namespace MWGui
         MyGUI::ImageBox* mOverlay;
 
         MWWorld::Ptr mPtr;
+        ItemStack mItemStack;
 
         static const std::unordered_map<ESM::Weapon::Type, const std::string> mWeapType; 
         static const std::string mBlank; 

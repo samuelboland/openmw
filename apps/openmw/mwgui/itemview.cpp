@@ -108,7 +108,21 @@ void ItemView::update()
         return;
 
     mModel->update();
+    
 
+    // updating is costly here (TODO: optimize by using a multilistbox maybe?)
+    if (mScrollView->getChildCount() > 0 
+        && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
+    {
+        for (size_t i = 0; i < mModel->getItemCount(); i++)
+        {
+            auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
+            if (mModel->getItem(i) != w->getItemStack())
+                break;
+        }
+        return; // no update required 
+    }
+    
     while (mScrollView->getChildCount())
         MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
     while (mHeader->getChildCount())

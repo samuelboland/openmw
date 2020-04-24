@@ -37,7 +37,7 @@ namespace MWGui
     };
 
     bool operator == (const ItemStack& left, const ItemStack& right);
-
+    bool operator != (const ItemStack& left, const ItemStack& right);
 
     /// @brief The base class that all item models should derive from.
     class ItemModel

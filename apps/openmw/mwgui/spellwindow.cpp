@@ -239,6 +239,9 @@ namespace MWGui
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
+        
+        onCategoryFilterChanged(mAllButton);
+        mAllButton->setStateSelected(true);
 
         updateSpells();
         updateFilterEffect();

@@ -63,6 +63,7 @@ namespace MWGui
 
     void ItemListWidget::setItem(const ItemStack &item,int category)
     {
+        mItemStack = item;
         mPtr = item.mBase;
         const std::string typeName = item.mBase.getClass().getTypeName();
 

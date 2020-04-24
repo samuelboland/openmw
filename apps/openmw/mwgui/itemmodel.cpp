@@ -74,6 +74,11 @@ namespace MWGui
         return store.stacks(left.mBase, right.mBase);
     }
 
+    bool operator != (const ItemStack& left, const ItemStack& right)
+    {
+        return !(left == right);
+    }
+
     ItemModel::ItemModel()
     {
     }

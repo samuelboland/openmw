@@ -101,7 +101,6 @@ namespace MWGui
         , mScaleFactor(1.0f)
         , mUpdateTimer(0.f)
         , mScale(1.0)
-        , mViewMode(Mode::View_Avatar)
     {
         float uiScale = Settings::Manager::getFloat("scaling factor", "GUI");
         if (uiScale > 1.0)
@@ -364,6 +363,7 @@ namespace MWGui
 
     void InventoryWindow::updatePlayer()
     {
+
         mPtr = MWBase::Environment::get().getWorld ()->getPlayerPtr();
         mTradeModel = new TradeItemModel(new InventoryItemModel(mPtr), MWWorld::Ptr());
 
@@ -375,6 +375,9 @@ namespace MWGui
         mSortModel->setNameFilter(mFilterEdit->getCaption());
 
         mItemView->setModel(mSortModel);
+
+        mSortModel->setCategory(SortFilterItemModel::Category_All);
+        onFilterChanged(mAllButton);
 
         mPreview->updatePtr(mPtr);
         mPreview->rebuild();
@@ -761,7 +764,6 @@ namespace MWGui
 
     void InventoryWindow::onOpen()
     {   
-        setTitle(mAllButton->getUserString("Title"));
         // Reset the filter focus when opening the window
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)
@@ -779,7 +781,7 @@ namespace MWGui
             mLeftPane->setVisible(Settings::Manager::getBool(setting + " avatar", "Windows"));
             mToggleAvatar->setVisible(true);
         }
-
+        updatePlayer();
         adjustPanes();
     }
 
