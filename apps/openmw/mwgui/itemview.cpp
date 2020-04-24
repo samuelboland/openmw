@@ -109,11 +109,13 @@ void ItemView::update()
 
     mModel->update();
     
-
     // updating is costly here (TODO: optimize by using a multilistbox maybe?)
     // note: update() itself is not causing bad performance with huge inventory size when 
     // resizing, moving windows, and (less pronounced) when sliding with mouse. 
     // Instead, it seems to be with redrawing the necassary widgets. 
+
+    // This broke companion and inventory views
+    /* 
     if (mScrollView->getChildCount() > 0 
         && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
     {
@@ -128,7 +130,7 @@ void ItemView::update()
             }
         }
         if (!needsUpdate) return; 
-    }
+    }*/
     
     while (mScrollView->getChildCount())
         MyGUI::Gui::getInstance().destroyWidget(mScrollView->getChildAt(0));
