@@ -1,3 +1,5 @@
+My personal playground for OpenMW stuff. 
+
 OpenMW
 ======
 
