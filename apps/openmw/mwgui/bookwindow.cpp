@@ -1,5 +1,7 @@
 #include "bookwindow.hpp"
 
+#include <array>
+
 #include <osg/NodeVisitor>
 #include <osg/Image>
 
@@ -147,7 +149,7 @@ namespace MWGui
                             bool falsePositive = false;
                             std::string filepath = Misc::ResourceHelpers::correctResourcePath("textures",tex.texture->filename,mResourceSystem->getVFS());
 
-                            for (auto item : blacklist)
+                            for (const std::string& item : blacklist)
                                 if (filepath.find(item) != std::string::npos)
                                 {
                                     falsePositive = true;
