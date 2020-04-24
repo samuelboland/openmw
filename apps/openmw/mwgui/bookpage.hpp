@@ -51,7 +51,7 @@ namespace MWGui
 
         GlyphInfo(MyGUI::IFont* font, MyGUI::Char ch)
         {
-            static const int fontHeight = 12;
+            static const int fontHeight = MWBase::Environment::get().getWindowManager()->getFontHeight();
 
             MyGUI::GlyphInfo* gi = font->getGlyphInfo(ch);
             if (gi)
