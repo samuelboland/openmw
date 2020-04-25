@@ -638,6 +638,8 @@ namespace MWGui
         WindowModal::onOpen();
 
         mMagicList->setModel(new SpellModel(MWMechanics::getPlayer()));
+        mMagicList->getModel()->setCategory(SpellModel::Category_Simple);
+        mMagicList->update();
         mMagicList->resetScrollbars();
     }
 

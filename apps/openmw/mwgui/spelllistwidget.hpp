@@ -73,6 +73,9 @@ namespace MWGui
             }
             
             mSchool->setVisible(false);
+            mCostChance->setVisible(false);
+
+            Gui::ButtonGroup group;
 
             if (category == MWGui::SpellModel::Category_All)
             {
@@ -86,17 +89,20 @@ namespace MWGui
                 else if (spell.mType == Spell::Type_EnchantedItem)
                     school = "Item";
 
+                group.push_back(mSchool);
                 mSchool->setCaptionWithReplacing(school);
                 mSchool->setVisible(true);
             }
 
-            mCostChance->setCaption(spell.mCostColumn);
-            mCostChance->setTextAlign(MyGUI::Align::Right);
+            if (category != SpellModel::Category_Simple)
+            {
+                mCostChance->setCaption(spell.mCostColumn);
+                mCostChance->setTextAlign(MyGUI::Align::Right);
+                mCostChance->setVisible(true);
+                group.push_back(mCostChance);
+            }
 
-            Gui::ButtonGroup group;
             group.push_back(mName);
-            group.push_back(mSchool);
-            group.push_back(mCostChance);
             
             Gui::SharedStateButton::createButtonGroup(group);
 
@@ -105,7 +111,6 @@ namespace MWGui
             mOverlay->setImageTexture("textures\\ui\\selected.dds");
             mOverlay->setNeedMouseFocus(false);
             mOverlay->setVisible(false);
-
 
             // hidden widget still take up space :(
             for (size_t i = 0; i < mItem->getChildCount(); i++)

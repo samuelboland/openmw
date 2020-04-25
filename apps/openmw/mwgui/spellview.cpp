@@ -101,8 +101,10 @@ namespace MWGui
 
         if (category == MWGui::SpellModel::Category_All)
             mHeader->changeWidgetSkin("MW_SpellListHeader_All"); 
+        else if (category == MWGui::SpellModel::Category_Simple)
+            mHeader->changeWidgetSkin("MW_SpellListHeader_Simple"); 
         else 
-             mHeader->changeWidgetSkin("MW_SpellListHeader"); 
+            mHeader->changeWidgetSkin("MW_SpellListHeader"); 
 
         for (SpellModel::ModelIndex i = 0; i<int(mModel->getItemCount()); ++i)
         {

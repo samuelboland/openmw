@@ -147,7 +147,7 @@ namespace MWGui
             }
         }
 
-        if (mCategory == Category_All || mCategory == Category_Items)
+        if (mCategory >= Category_All || mCategory == Category_Items)
         {
             MWWorld::InventoryStore& invStore = mActor.getClass().getInventoryStore(mActor);
             for (MWWorld::ContainerStoreIterator it = invStore.begin(); it != invStore.end(); ++it)

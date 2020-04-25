@@ -247,6 +247,19 @@
         </Widget>
     </Resource>
 
+    <Resource type="ResourceLayout" name="MW_SpellListHeader_Simple" version="3.2.0">
+        <Widget type="Widget" skin="" position="0 0 0 42" name="Root">
+            <Widget type="ImageBox" skin="MW_HLine" position="0 15 0 28" align="Stretch"/>
+            <Widget type="HBox" skin="SandBrightText" position="0 0 0 28" align="Left Top HStretch">
+                <Widget type="Widget" skin="" position="0 0 16 0" align="VCenter Left" />
+                <Widget type="Button" skin="SandBrightText" position="0 0 0 28" name="SpellName" align="Left Top HStretch">
+                    <Property key="TextAlign" value="Left VCenter" /> 
+                    <Property key="Caption" value="Name"/>
+                </Widget>
+            </Widget>
+        </Widget>
+    </Resource>
+
     <Resource type="ResourceLayout" name="MW_ItemListHeader_All" version="3.2.0">
         <Widget type="Widget" skin="" position="0 0 0 42" name="Root">
             <Widget type="ImageBox" skin="MW_HLine" position="28 15 0 28" align="Stretch"/>

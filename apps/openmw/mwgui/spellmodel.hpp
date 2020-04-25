@@ -96,6 +96,7 @@ namespace MWGui
         static const int Category_Items = 6;
         static const int Category_Powers = 7;
         static const int Category_All = 8;
+        static const int Category_Simple = 9;
 
         size_t getItemCount() const;
         ModelIndex getSelectedIndex() const;
