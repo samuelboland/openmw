@@ -8,8 +8,6 @@ branches:
 
 environment:
     matrix:
-        - msvc: 2017
-          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
         - msvc: 2019
           APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
@@ -55,7 +53,7 @@ before_build:
 build_script:
     - cmd: if %PLATFORM%==Win32 set build=MSVC%msvc%_32
     - cmd: if %PLATFORM%==x64 set build=MSVC%msvc%_64
-    - cmd: msbuild %build%\OpenMW.sln /t:openmw:Build /p:Configuration=%configuration% /m:2 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+    - cmd: msbuild %build%\OpenMW.sln /t:Build /p:Configuration=%configuration% /m:2 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
     - cmd: if %PLATFORM%==x64 7z a OpenMW_MSVC%msvc%_x64.zip %APPVEYOR_BUILD_FOLDER%\MSVC%msvc%_64\%configuration%\ -xr"!*.pdb"
