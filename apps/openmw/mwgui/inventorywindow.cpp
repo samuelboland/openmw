@@ -768,7 +768,6 @@ namespace MWGui
         MyGUI::Widget* focus = MyGUI::InputManager::getInstance().getKeyFocusWidget();
         if (focus == mFilterEdit)
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(nullptr);
-
         if (MWBase::Environment::get().getWindowManager()->getMode() != GM_Inventory)
         {
             mLeftPane->setVisible(false);
@@ -781,7 +780,6 @@ namespace MWGui
             mLeftPane->setVisible(Settings::Manager::getBool(setting + " avatar", "Windows"));
             mToggleAvatar->setVisible(true);
         }
-        updatePlayer();
         adjustPanes();
     }
 

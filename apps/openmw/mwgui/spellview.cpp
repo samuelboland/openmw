@@ -124,53 +124,9 @@ namespace MWGui
         if (!mModel.get())
             return;
 
-        /*
         mModel->update();
-        bool fullUpdateRequired = false;
-        SpellModel::ModelIndex maxSpellIndexFound = -1;
-        for (LineInfo& line : mLines)
-        {
-            // only update the lines that are "updateable"
-            SpellModel::ModelIndex spellIndex(line.mSpellIndex);
-            if (spellIndex != NoSpellIndex)
-            {
-                Gui::SharedStateButton* nameButton = reinterpret_cast<Gui::SharedStateButton*>(line.mLeftWidget);
 
-                // match model against line
-                // if don't match, then major change has happened, so do a full update
-                if (mModel->getItemCount() <= static_cast<unsigned>(spellIndex))
-                {
-                    fullUpdateRequired = true;
-                    break;
-                }
-
-                // more checking for major change.
-                const Spell& spell = mModel->getItem(spellIndex);
-                const std::string captionSuffix = MWGui::ToolTips::getCountString(spell.mCount);
-                if (nameButton->getCaption() != (spell.mName + captionSuffix))
-                {
-                    fullUpdateRequired = true;
-                    break;
-                }
-                else
-                {
-                    maxSpellIndexFound = spellIndex;
-                    Gui::SharedStateButton* costButton = reinterpret_cast<Gui::SharedStateButton*>(line.mRightWidget);
-                    if ((costButton != nullptr) && (costButton->getCaption() != spell.mCostColumn))
-                    {
-                        costButton->setCaption(spell.mCostColumn);
-                    }
-                }
-            }
-        }
-
-        // special case, look for spells added to model that are beyond last updatable item
-        SpellModel::ModelIndex topSpellIndex = mModel->getItemCount() - 1;
-        if (fullUpdateRequired ||
-            ((0 <= topSpellIndex) && (maxSpellIndexFound < topSpellIndex)))
-        {
-            update();
-        }*/
+        //update();
     }
 
     ItemListWidgetHeader* SpellView::getHeader()

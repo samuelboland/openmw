@@ -113,7 +113,7 @@ void ItemView::update(bool force)
     // note: update() itself is not causing bad performance with huge inventory size when 
     // resizing, moving windows, and (less pronounced) when sliding with mouse. 
     // Instead, it seems to be with redrawing the necassary widgets. 
-
+    
     if (!force && mScrollView->getChildCount() > 0 
             && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
     {
