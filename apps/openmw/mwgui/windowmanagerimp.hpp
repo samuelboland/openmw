@@ -99,6 +99,7 @@ namespace MWGui
   class CharacterCreation;
   class DragAndDrop;
   class ToolTips;
+  class QuickLoot;
   class TextInputDialog;
   class InfoBoxDialog;
   class MessageBoxManager;
@@ -165,6 +166,10 @@ namespace MWGui
     virtual bool isGuiMode() const;
 
     virtual bool isConsoleMode() const;
+
+    virtual bool isQuickLootMode() const;
+
+    virtual void notifyMouseWheel(int rel);
 
     virtual void toggleVisible(GuiWindow wnd);
 
@@ -425,6 +430,7 @@ namespace MWGui
     MapWindow *mMap;
     MWRender::LocalMap* mLocalMapRender;
     ToolTips *mToolTips;
+    QuickLoot *mQuickLoot;
     StatsWindow *mStatsWindow;
     MessageBoxManager *mMessageBoxManager;
     Console *mConsole;

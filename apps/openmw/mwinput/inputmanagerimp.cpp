@@ -490,7 +490,7 @@ namespace MWInput
                     mPlayer->setAttackingOrSpell(currentValue != 0 && state != MWMechanics::DrawState_Nothing);
                 }
             }
-            else if (action == A_Jump)
+            else if (action == A_Jump && !MWBase::Environment::get().getWindowManager()->isQuickLootMode())
             {
                 if(mJoystickLastUsed && currentValue == 1.0 && actionIsActive(A_ToggleWeapon))
                     action = A_CycleWeaponLeft;
@@ -588,11 +588,15 @@ namespace MWInput
                 MWBase::Environment::get().getWindowManager()->toggleDebugWindow();
                 break;
             case A_ZoomIn:
-                if (mControlSwitch["playerviewswitch"] && mControlSwitch["playercontrols"] && !MWBase::Environment::get().getWindowManager()->isGuiMode())
+                if (mControlSwitch["playerviewswitch"] && mControlSwitch["playercontrols"] && 
+                    !MWBase::Environment::get().getWindowManager()->isGuiMode() && 
+                    !MWBase::Environment::get().getWindowManager()->isQuickLootMode())
                     MWBase::Environment::get().getWorld()->setCameraDistance(ZOOM_SCALE, true, true);
                 break;
             case A_ZoomOut:
-                if (mControlSwitch["playerviewswitch"] && mControlSwitch["playercontrols"] && !MWBase::Environment::get().getWindowManager()->isGuiMode())
+                if (mControlSwitch["playerviewswitch"] && mControlSwitch["playercontrols"] && 
+                    !MWBase::Environment::get().getWindowManager()->isQuickLootMode() && 
+                    !MWBase::Environment::get().getWindowManager()->isGuiMode())
                     MWBase::Environment::get().getWorld()->setCameraDistance(-ZOOM_SCALE, true, true);
                 break;
             case A_QuickSave:
@@ -762,8 +766,10 @@ namespace MWInput
             mGyroUpdateTimer += dt;
         }
 
+        auto* winMgr = MWBase::Environment::get().getWindowManager();
+
         // Disable movement in Gui mode
-        if (!(MWBase::Environment::get().getWindowManager()->isGuiMode()
+        if (!(winMgr->isGuiMode()
             || MWBase::Environment::get().getStateManager()->getState() != MWBase::StateManager::State_Running))
         {
             // Configure player movement according to keyboard input. Actual movement will
@@ -1218,6 +1224,10 @@ namespace MWInput
             rot[0] = -y;
             rot[1] = 0.0f;
             rot[2] = -x;
+
+            // send a "fake" mouse wheel event to our quick loot menu, not sure how to do this properly 
+            if (arg.zrel && MWBase::Environment::get().getWindowManager()->isQuickLootMode())
+                MWBase::Environment::get().getWindowManager()->notifyMouseWheel(arg.zrel);
 
             // Only actually turn player when we're not in vanity mode
             if(!MWBase::Environment::get().getWorld()->vanityRotateCamera(rot) && mControlSwitch["playerlooking"])

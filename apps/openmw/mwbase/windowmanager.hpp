@@ -127,6 +127,10 @@ namespace MWBase
 
             virtual bool isConsoleMode() const = 0;
 
+            virtual bool isQuickLootMode() const = 0;
+
+            virtual void notifyMouseWheel(int rel) = 0;
+
             virtual void toggleVisible (MWGui::GuiWindow wnd) = 0;
 
             virtual void forceHide(MWGui::GuiWindow wnd) = 0;

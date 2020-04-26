@@ -32,6 +32,7 @@ ItemView::ItemView()
     , mLastIndex(0)
     , mScrollView(nullptr)
     , mHeader(nullptr)
+    , mDisableHeader(false)
 {
 }
 
@@ -79,7 +80,8 @@ void ItemView::layoutWidgets()
     bool scrollVisible = height > mScrollView->getHeight();
     int rightMargin = (scrollVisible) ? 45 :10;
 
-    mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-rightMargin,36));
+    if (!mDisableHeader)
+        mHeader->setSize(MyGUI::IntSize(mScrollView->getWidth()-rightMargin,36));
 
     unsigned int count = dragArea->getChildCount();
     int h = (count) ? dragArea->getChildAt(0)->getHeight() : 0; 
@@ -142,15 +144,24 @@ void ItemView::update(bool force)
     dragArea->eventMouseWheel += MyGUI::newDelegate(this, &ItemView::onMouseWheelMoved);
     
     int category = dynamic_cast<MWGui::SortFilterItemModel*>(mModel)->getCategory();  
+    
+    if (!mDisableHeader)
+    {
 
-    if (category == MWGui::SortFilterItemModel::Category_Weapon)
-        mHeader->changeWidgetSkin("MW_ItemListHeader_Weapon");
-    else if (category == MWGui::SortFilterItemModel::Category_Armor)
-        mHeader->changeWidgetSkin("MW_ItemListHeader_Armor");
-    else if (category == MWGui::SortFilterItemModel::Category_Simple)
-        mHeader->changeWidgetSkin("MW_ItemListHeader_Simple");
+        if (category == MWGui::SortFilterItemModel::Category_Weapon)
+            mHeader->changeWidgetSkin("MW_ItemListHeader_Weapon");
+        else if (category == MWGui::SortFilterItemModel::Category_Armor)
+            mHeader->changeWidgetSkin("MW_ItemListHeader_Armor");
+        else if (category == MWGui::SortFilterItemModel::Category_Simple)
+            mHeader->changeWidgetSkin("MW_ItemListHeader_Simple");
+        else 
+            mHeader->changeWidgetSkin("MW_ItemListHeader_All");
+    }
     else 
-        mHeader->changeWidgetSkin("MW_ItemListHeader_All");
+    {
+        mHeader->setVisible(false);
+        mHeader->setSize(0,0);
+    }
 
     for (ItemModel::ModelIndex i=0; i < static_cast<int>(mModel->getItemCount()); ++i)
     {
@@ -169,6 +180,38 @@ void ItemView::update(bool force)
         itemWidget->eventItemFocused += MyGUI::newDelegate(this, &ItemView::onItemFocused);
     }
     layoutWidgets();
+}
+
+int ItemView::forceItemFocused(int index)
+{
+    if (!mScrollView->getChildCount())
+        return 0;
+    int count = mScrollView->getChildAt(0)->getChildCount();
+    if (!count )
+        return 0;
+    // handle last element specially 
+    if (index > count - 1)
+        index = count -1;
+
+    auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(index));
+    if (w)
+    {
+        w->setStateFocused(true);
+        onItemFocused(w);
+    }
+    
+    return index;
+}
+
+int ItemView::requestListSize() const
+{
+    if (!mScrollView->getChildCount())
+        return 0;
+    int count = mScrollView->getChildAt(0)->getChildCount();
+    if (!count )
+        return 0;
+
+    return count * mScrollView->getChildAt(0)->getChildAt(0)->getHeight();
 }
 
 void ItemView::onItemFocused(ItemListWidget* item)
@@ -254,7 +297,7 @@ void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyG
             }
         }
     }
-    else if (key == MyGUI::KeyCode::Return)
+    else if (key == MyGUI::KeyCode::Return || key == MyGUI::KeyCode::E)
         eventItemClicked(index);
 
     eventKeyButtonPressed(sender, key);

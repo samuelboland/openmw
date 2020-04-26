@@ -26,6 +26,14 @@ namespace MWGui
 
         ItemListWidgetHeader* getHeader() { return mHeader; }
 
+        /// Attempts to focus the selected index, will always be in bounds 
+        /// returns the actual index focused 
+        int forceItemFocused(int index);
+
+        void disableHeader(bool disable) { mDisableHeader = true; }
+
+        int requestListSize() const;
+
         typedef MyGUI::delegates::CMultiDelegate2<MyGUI::Widget*,MyGUI::KeyCode> EventHandle_WidgetKey;
         typedef MyGUI::delegates::CMultiDelegate1<ItemModel::ModelIndex> EventHandle_ModelIndex;
         typedef MyGUI::delegates::CMultiDelegate0 EventHandle_Void;
@@ -62,6 +70,8 @@ namespace MWGui
         
         MyGUI::ScrollView* mScrollView;
         ItemListWidgetHeader* mHeader;
+
+        bool mDisableHeader;
 
     };
 

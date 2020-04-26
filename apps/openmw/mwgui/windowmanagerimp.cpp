@@ -70,6 +70,7 @@
 #include "statswindow.hpp"
 #include "messagebox.hpp"
 #include "tooltips.hpp"
+#include "quickloot.hpp"
 #include "scrollwindow.hpp"
 #include "bookwindow.hpp"
 #include "hud.hpp"
@@ -142,6 +143,7 @@ namespace MWGui
       , mMap(nullptr)
       , mLocalMapRender(nullptr)
       , mToolTips(nullptr)
+      , mQuickLoot(nullptr)
       , mStatsWindow(nullptr)
       , mMessageBoxManager(nullptr)
       , mConsole(nullptr)
@@ -486,6 +488,8 @@ namespace MWGui
 
         mToolTips = new ToolTips();
 
+        mQuickLoot = new QuickLoot();
+
         mScrollWindow = new ScrollWindow();
         mWindows.push_back(mScrollWindow);
         mGuiModeStates[GM_Scroll] = GuiModeState(mScrollWindow);
@@ -647,6 +651,7 @@ namespace MWGui
             delete mSoulgemDialog;
             delete mCursorManager;
             delete mToolTips;
+            delete mQuickLoot;
 
             cleanupGarbage();
 
@@ -691,6 +696,7 @@ namespace MWGui
 
         mHud->setVisible(mHudEnabled && !loading);
         mToolTips->setVisible(mHudEnabled && !loading);
+        mQuickLoot->setVisible(mHudEnabled && !loading);
 
         bool gameMode = !isGuiMode();
 
@@ -1025,6 +1031,7 @@ namespace MWGui
             mMessageBoxManager->onFrame(frameDuration);
 
         mToolTips->onFrame(frameDuration);
+        mQuickLoot->onFrame(frameDuration);
 
         if (mLocalMapRender)
             mLocalMapRender->cleanupCameras();
@@ -1122,6 +1129,7 @@ namespace MWGui
     void WindowManager::setFocusObject(const MWWorld::Ptr& focus)
     {
         mToolTips->setFocusObject(focus);
+        mQuickLoot->setFocusObject(focus);
 
         if(mHud && (mShowOwned == 2 || mShowOwned == 3))
         {
@@ -1133,6 +1141,7 @@ namespace MWGui
     void WindowManager::setFocusObjectScreenCoords(float min_x, float min_y, float max_x, float max_y)
     {
         mToolTips->setFocusObjectScreenCoords(min_x, min_y, max_x, max_y);
+        mQuickLoot->setFocusObjectScreenCoords(min_x, min_y, max_x, max_y);
     }
 
     bool WindowManager::toggleFullHelp()
@@ -1223,7 +1232,7 @@ namespace MWGui
     void WindowManager::processChangedSettings(const Settings::CategorySettingVector& changed)
     {
         mToolTips->setDelay(Settings::Manager::getFloat("tooltip delay", "GUI"));
-
+        mQuickLoot->setDelay(Settings::Manager::getFloat("tooltip delay", "GUI"));
         for (const auto& setting : changed)
         {
             if (setting.first == "HUD" && setting.second == "crosshair")
@@ -1560,6 +1569,16 @@ namespace MWGui
         return mConsole && mConsole->isVisible();
     }
 
+    bool WindowManager::isQuickLootMode() const
+    {
+        return mQuickLoot->isVisible();
+    }
+
+    void WindowManager::notifyMouseWheel(int rel)
+    {
+        mQuickLoot->notifyMouseWheel(rel);
+    }
+
     MWGui::GuiMode WindowManager::getMode() const
     {
         if (mGuiModes.empty())
@@ -1810,6 +1829,7 @@ namespace MWGui
         mMessageBoxManager->clear();
 
         mToolTips->clear();
+        mQuickLoot->clear();
 
         mSelectedSpell.clear();
         mCustomMarkers.clear();

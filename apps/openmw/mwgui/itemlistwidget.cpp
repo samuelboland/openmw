@@ -211,8 +211,11 @@ namespace MWGui
     {
         if (focus)
         {
-            MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
-            MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
+            if (!MWBase::Environment::get().getWindowManager()->isQuickLootMode())
+            {
+                MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
+                MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);
+            }
             mOverlay->setVisible(true);
         }
         else 
