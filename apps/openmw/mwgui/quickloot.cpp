@@ -428,7 +428,6 @@ namespace MWGui
         bool combat = MWBase::Environment::get().getWorld()->getPlayer().isInCombat();
         bool loot = mFocusObject.getClass().isActor() && mFocusObject.getClass().getCreatureStats(mFocusObject).isDead();
         bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(MWMechanics::getPlayer());
-        bool hidden = MWB
         bool hide = false;
 
         if (mFocusObject.getClass().hasInventoryStore(mFocusObject) && mFocusObject.getClass().isNpc())
