@@ -780,6 +780,13 @@ namespace MWGui
             mLeftPane->setVisible(Settings::Manager::getBool(setting + " avatar", "Windows"));
             mToggleAvatar->setVisible(true);
         }
+
+        if (!mPtr.isEmpty())
+        {
+            mItemView->update();
+            notifyContentChanged();
+        }
+
         adjustPanes();
     }
 

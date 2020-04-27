@@ -116,6 +116,7 @@ void ItemView::update(bool force)
     // resizing, moving windows, and (less pronounced) when sliding with mouse. 
     // Instead, it seems to be with redrawing the necassary widgets. 
     
+    
     if (!force && mScrollView->getChildCount() > 0 
             && mScrollView->getChildAt(0)->getChildCount() == mModel->getItemCount())
     {
@@ -123,7 +124,8 @@ void ItemView::update(bool force)
         for (size_t i = 0; i < mModel->getItemCount(); i++)
         {
             auto w = dynamic_cast<ItemListWidget*>(mScrollView->getChildAt(0)->getChildAt(i));
-            if (w == nullptr || mModel->getItem(i) != w->getItemStack())
+            if (w == nullptr || mModel->getItem(i) != w->getItemStack()
+            || mModel->getItem(i).mCount != w->getItemStack().mCount)
             {
                 needsUpdate = true;
                 break;
@@ -184,6 +186,9 @@ void ItemView::update(bool force)
 
 int ItemView::forceItemFocused(int index)
 {
+    if (!mModel)
+        return 0;
+
     if (!mScrollView->getChildCount())
         return 0;
     int count = mScrollView->getChildAt(0)->getChildCount();
@@ -199,7 +204,26 @@ int ItemView::forceItemFocused(int index)
         w->setStateFocused(true);
         onItemFocused(w);
     }
-    
+
+    // make sure we adjust for scrolling, this is just an approximation
+    if (mScrollView->isVisibleVScroll())
+    {
+        // how many items the scrollview can show
+        int maxItems = mScrollView->getHeight() / w->getHeight();
+        int minIndex = std::ceil((-mScrollView->getViewOffset().top / static_cast<float>(w->getHeight())));
+        int maxIndex = minIndex + maxItems - 1;
+
+        // this is *not* a scroll-to, it assumes the item is already in view
+        if (index > maxIndex)
+        {
+            mScrollView->setViewOffset(MyGUI::IntPoint(0, static_cast<int>(mScrollView->getViewOffset().top - w->getHeight())));
+        }
+        else if (index < minIndex)
+        {
+            mScrollView->setViewOffset(MyGUI::IntPoint(0, static_cast<int>(mScrollView->getViewOffset().top + w->getHeight())));
+        }
+    }
+
     return index;
 }
 

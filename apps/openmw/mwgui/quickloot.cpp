@@ -14,16 +14,17 @@
 #include "../mwbase/mechanicsmanager.hpp"
 
 #include "../mwworld/class.hpp"
+#include "../mwworld/player.hpp"
 #include "../mwworld/esmstore.hpp"
-#include "../mwmechanics/spellcasting.hpp"
 #include "../mwmechanics/actorutil.hpp"
+#include "../mwworld/inventorystore.hpp"
+#include "../mwmechanics/spellcasting.hpp"
 #include "../mwmechanics/creaturestats.hpp"
 
 #include "inventorywindow.hpp"
-
+#include "containeritemmodel.hpp"
 #include "inventoryitemmodel.hpp"
 #include "pickpocketitemmodel.hpp"
-#include "containeritemmodel.hpp"
 
 #include "itemmodel.hpp"
 
@@ -58,7 +59,7 @@ namespace MWGui
         // turn off mouse focus so that getMouseFocusWidget returns the correct widget,
         // even if the mouse is over the tooltip
         mQuickLoot->setNeedKeyFocus(true);
-        mQuickLoot->setNeedMouseFocus(true);
+        mQuickLoot->setNeedMouseFocus(false);
         mMainWidget->setNeedMouseFocus(false);
         mMainWidget->setNeedKeyFocus(false);
 
@@ -73,9 +74,23 @@ namespace MWGui
             mLastIndex++;
         else 
             mLastIndex = std::max(0, mLastIndex - 1);
+
+        mQuickLoot->forceItemFocused(mLastIndex);
+        mQuickLoot->update();
     }
 
-    // TODO: add take all shortcut 
+    bool QuickLoot::checkOwned()
+    {
+        if(mFocusObject.isEmpty())
+            return false;
+
+        MWWorld::Ptr ptr = MWMechanics::getPlayer();
+        MWWorld::Ptr victim;
+
+        MWBase::MechanicsManager* mm = MWBase::Environment::get().getMechanicsManager();
+        return !mm->isAllowedToUse(ptr, mFocusObject, victim);
+    }
+
     void QuickLoot::onItemSelected(int index)
     {
         if (!mModel) return;
@@ -102,6 +117,48 @@ namespace MWGui
 
     void QuickLoot::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
     {
+        if (key == MyGUI::KeyCode::A)
+        {
+            if (!mModel) return;
+
+            // transfer everything into the player's inventory
+            ItemModel* playerModel = MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel();
+            mModel->update();
+
+            // unequip all items to avoid unequipping/reequipping
+            if (mFocusObject.getClass().hasInventoryStore(mFocusObject))
+            {
+                MWWorld::InventoryStore& invStore = mFocusObject.getClass().getInventoryStore(mFocusObject);
+                for (size_t i=0; i < mModel->getItemCount(); ++i)
+                {
+                    const ItemStack& item = mModel->getItem(i);
+                    if (invStore.isEquipped(item.mBase) == false)
+                        continue;
+
+                    invStore.unequipItem(item.mBase, mFocusObject);
+                }
+            }
+
+            mModel->update();
+
+            for (size_t i=0; i<mModel->getItemCount(); ++i)
+            {
+                if (i==0)
+                {
+                    // play the sound of the first object
+                    MWWorld::Ptr item = mModel->getItem(i).mBase;
+                    std::string sound = item.getClass().getUpSoundId(item);
+                    MWBase::Environment::get().getWindowManager()->playSound(sound);
+                }
+
+                const ItemStack& item = mModel->getItem(i);
+
+                if (!mModel->onTakeItem(item.mBase, item.mCount))
+                    break;
+
+                mModel->moveItem(item, item.mCount, playerModel);
+            }
+        }
     }
 
     void QuickLoot::setEnabled(bool enabled)
@@ -132,16 +189,17 @@ namespace MWGui
 
         MWBase::WindowManager *winMgr = MWBase::Environment::get().getWindowManager();
         bool guiMode = winMgr->isGuiMode();
+        bool inCombat = MWBase::Environment::get().getWorld()->getPlayer().isInCombat();
 
         if (guiMode)
         {
             setVisibleAll(false);
             return;
         }
-        
-        if (!mFocusObject.isEmpty())
-        {
 
+        
+        if (!mFocusObject.isEmpty() && mFocusObject.getCellRef().getLockLevel() <= 0)
+        {
             mQuickLoot->setModel(nullptr);
             mModel = nullptr;
             mSortModel = nullptr;
@@ -150,15 +208,16 @@ namespace MWGui
             bool loot = mFocusObject.getClass().isActor() && mFocusObject.getClass().getCreatureStats(mFocusObject).isDead();
             bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(MWMechanics::getPlayer());
 
-            mQuickLoot->getParent()->changeWidgetSkin("HUD_Box_NoTransp");
+            auto skin = (checkOwned()) ?  "HUD_Box_Owned" : "HUD_Box";
+
+            mQuickLoot->getParent()->changeWidgetSkin(skin);
 
             if (mFocusObject.getClass().hasInventoryStore(mFocusObject))
             {
-                if (mFocusObject.getClass().isNpc() && !loot && sneaking)
+                if (mFocusObject.getClass().isNpc() && !loot && sneaking && !inCombat)
                 {
                     mModel = new PickpocketItemModel(mFocusObject, new InventoryItemModel(mFocusObject),
                         !mFocusObject.getClass().getCreatureStats(mFocusObject).getKnockedDown());
-                    mQuickLoot->getParent()->changeWidgetSkin("HUD_Box_NoTransp_Owned");
                 }
                 else if (loot)
                 {
@@ -182,10 +241,11 @@ namespace MWGui
                 mQuickLoot->setModel(mSortModel);
                 mQuickLoot->update();
             }
+            
             MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mQuickLoot);
            
             if (mQuickLoot->getModel())
-                mLastIndex = mQuickLoot->forceItemFocused(mLastIndex);
+                mLastIndex = mQuickLoot->forceItemFocused(0);
 
             if (mModel && mModel->getItemCount())
             {
@@ -196,9 +256,10 @@ namespace MWGui
             {
                 setVisibleAll(false);
             }
-        }
+        } 
 
-        MyGUI::IntSize tooltipSize = MyGUI::IntSize(mMainWidget->getWidth(),64 + mQuickLoot->requestListSize());
+        MyGUI::IntSize tooltipSize = MyGUI::IntSize(mMainWidget->getWidth(),
+            std::min(64 + mQuickLoot->requestListSize(),400));
         setCoord(viewSize.width*0.7 - tooltipSize.width/2,
                 viewSize.height*0.6 - tooltipSize.height/2,
                 tooltipSize.width,
@@ -234,6 +295,7 @@ namespace MWGui
     void QuickLoot::setFocusObject(const MWWorld::Ptr& focus)
     {
         if (focus.isEmpty() || 
+            MWBase::Environment::get().getWindowManager()->isGuiMode() || 
             (focus.getTypeName() != typeid(ESM::Container).name() && !focus.getClass().hasInventoryStore(focus)))
         {
             setVisibleAll(false);
@@ -242,6 +304,42 @@ namespace MWGui
         
         mLastFocusObject = mFocusObject;
         mFocusObject = focus;
+
+        bool combat = MWBase::Environment::get().getWorld()->getPlayer().isInCombat();
+        bool loot = mFocusObject.getClass().isActor() && mFocusObject.getClass().getCreatureStats(mFocusObject).isDead();
+        bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(MWMechanics::getPlayer());
+        bool hide = false;
+
+        if (mFocusObject.getClass().hasInventoryStore(mFocusObject) && mFocusObject.getClass().isNpc())
+                if (!loot && !sneaking || (!loot && sneaking && combat))
+                    hide = true;
+
+        if (mLastFocusObject == mFocusObject && !hide)
+        {
+            if (mQuickLoot->getModel())
+            {
+                mModel->update();
+                mQuickLoot->update();
+                if (mSortModel->getItemCount())
+                {
+                    mQuickLoot->forceItemFocused(mLastIndex);
+                    mQuickLoot->update();
+                    setVisibleAll(true);
+                    if (MyGUI::InputManager::getInstance().getKeyFocusWidget() == nullptr)
+                        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mQuickLoot);
+                }
+                else 
+                    setVisibleAll(false);
+                return;
+            }
+        }
+        else 
+        {
+            setVisibleAll(false);
+            mQuickLoot->setModel(nullptr);
+            mSortModel = nullptr;
+            mModel = nullptr;
+        }
 
         update(mFrameDuration);
     }
