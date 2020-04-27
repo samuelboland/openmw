@@ -10,16 +10,25 @@
 
 #include "../mwbase/world.hpp"
 #include "../mwbase/environment.hpp"
+#include "../mwbase/soundmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/mechanicsmanager.hpp"
 
 #include "../mwworld/class.hpp"
+#include "../mwworld/action.hpp"
 #include "../mwworld/player.hpp"
 #include "../mwworld/esmstore.hpp"
-#include "../mwmechanics/actorutil.hpp"
+#include "../mwworld/actionopen.hpp"
+#include "../mwworld/actiontrap.hpp"
 #include "../mwworld/inventorystore.hpp"
-#include "../mwmechanics/spellcasting.hpp"
+
+#include "../mwmechanics/actor.hpp"
+#include "../mwmechanics/npcstats.hpp"
+#include "../mwmechanics/character.hpp"
+#include "../mwmechanics/actorutil.hpp"
 #include "../mwmechanics/creaturestats.hpp"
+
+#include "../mwrender/animation.hpp"
 
 #include "inventorywindow.hpp"
 #include "containeritemmodel.hpp"
@@ -45,6 +54,7 @@ namespace MWGui
         , mModel(nullptr)
         , mSortModel(nullptr)
         , mLastIndex(0)
+        , mPlaying(false)
     {
         getWidget(mQuickLoot, "QuickLoot");
         getWidget(mLabel, "Label");
@@ -91,9 +101,14 @@ namespace MWGui
         return !mm->isAllowedToUse(ptr, mFocusObject, victim);
     }
 
+
     void QuickLoot::onItemSelected(int index)
     {
         if (!mModel) return;
+
+        mOpened = true;
+
+        ensureTrapTriggered();
 
         const ItemStack& item = mModel->getItem(mSortModel->mapToSource(index));
         std::string sound = item.mBase.getClass().getDownSoundId(item.mBase);
@@ -115,11 +130,59 @@ namespace MWGui
         mQuickLoot->forceItemFocused(index);
     }
 
+    void QuickLoot::ensureTrapTriggered()
+    {
+        if (mFocusObject.isEmpty() || mFocusObject.getTypeName() != typeid(ESM::Container).name()) 
+            return;
+
+        MWWorld::Ptr player = MWBase::Environment::get().getWorld()->getPlayerPtr();
+        MWWorld::InventoryStore &invStore = player.getClass().getInventoryStore(player);
+
+        bool isTrapped = !mFocusObject.getCellRef().getTrap().empty();
+        bool hasKey = false;
+        std::string keyName;
+
+        static const std::string trapActivationSound = "Disarm Trap Fail";
+
+        // necassary since having the key will always deactivate the trap
+        const std::string keyId = mFocusObject.getCellRef().getKey();
+        if (!keyId.empty())
+        {
+            MWWorld::Ptr keyPtr = invStore.search(keyId);
+            if (!keyPtr.isEmpty())
+            {
+                hasKey = true;
+                keyName = keyPtr.getClass().getName(keyPtr);
+            }
+        }
+
+        if (isTrapped && hasKey)
+        {
+            MWBase::Environment::get().getWindowManager()->messageBox(keyName + " #{sKeyUsed}");
+            // using a key disarms the trap
+            if (isTrapped)
+            {
+                mFocusObject.getCellRef().setTrap("");
+                MWBase::Environment::get().getSoundManager()->playSound3D(mFocusObject, "Disarm Trap", 1.0f, 1.0f);
+            }
+        }
+        else if (isTrapped)
+        {
+            // Activate trap
+            std::shared_ptr<MWWorld::Action> action(new MWWorld::ActionTrap(mFocusObject.getCellRef().getTrap(), mFocusObject));
+            action->setSound(trapActivationSound);
+            action->execute(player);
+        }
+    }
+
     void QuickLoot::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
     {
-        if (key == MyGUI::KeyCode::A)
+        if (key == MyGUI::KeyCode::T)
         {
             if (!mModel) return;
+
+            mOpened = true;
+            ensureTrapTriggered();
 
             // transfer everything into the player's inventory
             ItemModel* playerModel = MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel();
@@ -173,6 +236,16 @@ namespace MWGui
 
     void QuickLoot::setVisibleAll(bool visible)
     {
+        mHidden = !visible;
+        if (visible && mOpened && mShouldOpen)
+        {
+            playOpenAnimation();
+            mShouldOpen = false;
+        }
+
+        if (visible)
+            resize();
+
         mMainWidget->setVisible(visible);
         for (int i = 0; i < mMainWidget->getChildCount(); i++)
             mMainWidget->getChildAt(i)->setVisible(visible);
@@ -180,8 +253,6 @@ namespace MWGui
 
     void QuickLoot::update(float frameDuration)
     {
-        const MyGUI::IntSize &viewSize = MyGUI::RenderManager::getInstance().getViewSize();
-
         if (!mEnabled)
         {
             return;
@@ -257,13 +328,6 @@ namespace MWGui
                 setVisibleAll(false);
             }
         } 
-
-        MyGUI::IntSize tooltipSize = MyGUI::IntSize(mMainWidget->getWidth(),
-            std::min(64 + mQuickLoot->requestListSize(),400));
-        setCoord(viewSize.width*0.7 - tooltipSize.width/2,
-                viewSize.height*0.6 - tooltipSize.height/2,
-                tooltipSize.width,
-                tooltipSize.height);
     }
 
     void QuickLoot::position(MyGUI::IntPoint& position, MyGUI::IntSize size, MyGUI::IntSize viewportSize)
@@ -281,6 +345,51 @@ namespace MWGui
         }
     }
 
+    void QuickLoot::playOpenAnimation()
+    {
+        if (mFocusObject.isEmpty() || mFocusObject.getTypeName() != typeid(ESM::Container).name()) 
+            return;
+        auto* anim = MWBase::Environment::get().getWorld()->getAnimation(mFocusObject);
+        if (!anim->hasAnimation("containeropen") || 
+            anim->isPlaying("containeropen") || 
+            anim->isPlaying("containerclose"))
+            return;
+        
+        // super hacky :}
+        mPlaying = true;
+        anim->play("containeropen", MWMechanics::Priority_Persistent, MWRender::Animation::BlendMask_All, false, 1.0f, "start", "stop", 0.f, 0);
+    }
+
+    void QuickLoot::playCloseAnimation() const
+    {
+        if (mFocusObject.isEmpty() || mFocusObject.getTypeName() != typeid(ESM::Container).name()) 
+            return;
+
+        auto* anim = MWBase::Environment::get().getWorld()->getAnimation(mFocusObject);
+
+        if (!anim->hasAnimation("containerclose"))
+            return;
+
+        float complete, startPoint = 0.f;
+        bool animPlaying = anim->getInfo("containeropen", &complete);
+        if (animPlaying)
+            startPoint = 1.f - complete;
+
+        anim->play("containerclose", MWMechanics::Priority_Persistent, MWRender::Animation::BlendMask_All, false, 1.0f, "start", "stop", startPoint, 0);
+    }
+
+    void QuickLoot::resize() 
+    {
+        const MyGUI::IntSize &viewSize = MyGUI::RenderManager::getInstance().getViewSize();
+
+        MyGUI::IntSize tooltipSize = MyGUI::IntSize(mMainWidget->getWidth(),
+            std::min(64 + mQuickLoot->requestListSize(),400));
+        setCoord(viewSize.width*0.7 - tooltipSize.width/2,
+                viewSize.height*0.6 - tooltipSize.height/2,
+                tooltipSize.width,
+                tooltipSize.height);
+    }
+
     void QuickLoot::clear()
     {
         mFocusObject = MWWorld::Ptr();
@@ -291,15 +400,26 @@ namespace MWGui
         }
     }
 
-    // TODO: this never shows when we reload a save 
     void QuickLoot::setFocusObject(const MWWorld::Ptr& focus)
     {
+        bool werewolf = MWMechanics::getPlayer().getClass().getNpcStats(MWMechanics::getPlayer()).isWerewolf();
+
         if (focus.isEmpty() || 
             MWBase::Environment::get().getWindowManager()->isGuiMode() || 
+            werewolf || 
             (focus.getTypeName() != typeid(ESM::Container).name() && !focus.getClass().hasInventoryStore(focus)))
         {
             setVisibleAll(false);
             return;
+        }
+
+        if (focus != mFocusObject)
+        {
+            if (mOpened && !mShouldOpen)
+                playCloseAnimation();
+
+            mOpened = false;
+            mShouldOpen = true;
         }
         
         mLastFocusObject = mFocusObject;
@@ -308,6 +428,7 @@ namespace MWGui
         bool combat = MWBase::Environment::get().getWorld()->getPlayer().isInCombat();
         bool loot = mFocusObject.getClass().isActor() && mFocusObject.getClass().getCreatureStats(mFocusObject).isDead();
         bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(MWMechanics::getPlayer());
+        bool hidden = MWB
         bool hide = false;
 
         if (mFocusObject.getClass().hasInventoryStore(mFocusObject) && mFocusObject.getClass().isNpc())

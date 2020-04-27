@@ -1574,6 +1574,21 @@ namespace MWGui
         return mQuickLoot->isVisible();
     }
 
+    bool WindowManager::isQuickLootAnimationPlaying() const
+    {
+        return mQuickLoot->isPlaying();
+    }
+
+    void WindowManager::setQuickLootAnimationPlaying(bool playing)
+    {
+        mQuickLoot->setPlaying(playing);
+    }
+    
+    void WindowManager::closeQuickLoot()
+    {
+        mQuickLoot->setFocusObject(nullptr);
+    }
+
     void WindowManager::notifyMouseWheel(int rel)
     {
         mQuickLoot->notifyMouseWheel(rel);

@@ -129,6 +129,12 @@ namespace MWBase
 
             virtual bool isQuickLootMode() const = 0;
 
+            virtual bool isQuickLootAnimationPlaying() const = 0;
+
+            virtual void setQuickLootAnimationPlaying(bool playing) = 0;
+
+            virtual void closeQuickLoot() = 0;
+
             virtual void notifyMouseWheel(int rel) = 0;
 
             virtual void toggleVisible (MWGui::GuiWindow wnd) = 0;

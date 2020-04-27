@@ -25,6 +25,9 @@ namespace MWGui
 
         bool isVisible() const { return mMainWidget->getVisible() && mQuickLoot->getVisible(); }
 
+        bool isPlaying() const { return mPlaying;}
+        void setPlaying(bool playing) { mPlaying = false; }
+
         void notifyMouseWheel(int rel);
 
         void clear();
@@ -32,10 +35,17 @@ namespace MWGui
         void setFocusObject(const MWWorld::Ptr& focus);
         void setFocusObjectScreenCoords(float min_x, float min_y, float max_x, float max_y);
         ///< set the screen-space position of the tooltip for focused object
-
-        bool checkOwned();
         
+        bool checkOwned();
+
+        void resize();
+
+        void ensureTrapTriggered(); 
+
     private:
+
+        void playOpenAnimation();
+        void playCloseAnimation() const;
 
         void setVisibleAll(bool visible);
 
@@ -43,6 +53,13 @@ namespace MWGui
         ItemModel* mModel;
         MyGUI::TextBox* mLabel;
         SortFilterItemModel* mSortModel;
+
+        /// has the current container been "opened"
+        bool mOpened;
+        bool mShouldOpen;
+
+        bool mHidden;
+        bool mPlaying;
 
         MWWorld::Ptr mFocusObject;
         MWWorld::Ptr mLastFocusObject;

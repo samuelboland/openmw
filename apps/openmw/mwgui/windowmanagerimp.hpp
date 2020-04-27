@@ -169,6 +169,12 @@ namespace MWGui
 
     virtual bool isQuickLootMode() const;
 
+    virtual bool isQuickLootAnimationPlaying() const;
+
+    virtual void setQuickLootAnimationPlaying(bool playing);
+
+    virtual void closeQuickLoot();
+
     virtual void notifyMouseWheel(int rel);
 
     virtual void toggleVisible(GuiWindow wnd);
