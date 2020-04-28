@@ -118,9 +118,13 @@ namespace MWGui
         mPages = formatter.markupToWidget(mLeftPage, ref->mBase->mText);
         formatter.markupToWidget(mRightPage, ref->mBase->mText);
 
-        mJImage->setImageTexture("textures\\ui\\book_overlay.dds");
         static const std::string defaultTex = "textures\\tx_menubook.dds";
         mBookJacket->setImageTexture(defaultTex);
+
+        //mJImage->setImageTexture("textures\\ui\\book_overlay.dds");
+        /*
+
+        // Cool Concept, but needs cool textures :(
    
         auto sceneMgr = mResourceSystem->getSceneManager();
         auto bookPtr = mBook.get<ESM::Book>();
@@ -164,7 +168,7 @@ namespace MWGui
                     }
                 }
             }
-        }
+        }*/
         updatePages();
 
         setTakeButtonShow(showTakeButton);
