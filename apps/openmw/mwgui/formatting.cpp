@@ -412,7 +412,9 @@ namespace MWGui
             box->setMaxTextLength(text.size());
             box->setTextAlign(mBlockStyle.mAlign);
             box->setTextColour(mTextStyle.mColour);
+            //box->setFontName(mTextStyle.mFont);
             box->setFontName(mTextStyle.mFont);
+            box->setFontHeight(13);
             box->setCaption(MyGUI::TextIterator::toTagsString(text));
             box->setSize(box->getSize().width, box->getTextSize().height);
             mEditBox = box;
@@ -426,7 +428,7 @@ namespace MWGui
         int TextElement::pageSplit()
         {
             // split lines
-            const int lineHeight = MWBase::Environment::get().getWindowManager()->getFontHeight();
+            const int lineHeight = 13;
             unsigned int lastLine = (mPaginator.getStartTop() + mPaginator.getPageHeight() - mPaginator.getCurrentTop());
             if (lineHeight > 0)
                 lastLine /= lineHeight;

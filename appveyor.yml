@@ -2,14 +2,12 @@ version: "{build}"
 
 branches:
     only:
-        - master
+        - morro_ui
         - /openmw-.*$/
         - appveyor
 
 environment:
     matrix:
-        - msvc: 2017
-          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
         - msvc: 2019
           APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 

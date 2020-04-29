@@ -99,6 +99,7 @@ namespace MWGui
   class CharacterCreation;
   class DragAndDrop;
   class ToolTips;
+  class QuickLoot;
   class TextInputDialog;
   class InfoBoxDialog;
   class MessageBoxManager;
@@ -166,6 +167,16 @@ namespace MWGui
 
     virtual bool isConsoleMode() const;
 
+    virtual bool isQuickLootMode() const;
+
+    virtual bool isQuickLootAnimationPlaying() const;
+
+    virtual void setQuickLootAnimationPlaying(bool playing);
+
+    virtual void closeQuickLoot();
+
+    virtual void notifyMouseWheel(int rel);
+
     virtual void toggleVisible(GuiWindow wnd);
 
     virtual void forceHide(MWGui::GuiWindow wnd);
@@ -184,6 +195,7 @@ namespace MWGui
     virtual MWGui::CountDialog* getCountDialog();
     virtual MWGui::ConfirmationDialog* getConfirmationDialog();
     virtual MWGui::TradeWindow* getTradeWindow();
+    virtual MWGui::QuickKeysMenu* getQuickKeysMenu();
 
     /// Make the player use an item, while updating GUI state accordingly
     virtual void useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions=false);
@@ -240,6 +252,10 @@ namespace MWGui
     virtual void activateQuickKey (int index);
     /// update activated quick key state (if action executing was delayed for some reason)
     virtual void updateActivatedQuickKey ();
+
+    // whether or not to use key focu or mouse focus widget for tooltips 
+    virtual void setKeyTooltip(bool enable);
+    virtual bool isKeyTooltip() const;
 
     virtual std::string getSelectedSpell() { return mSelectedSpell; }
     virtual void setSelectedSpell(const std::string& spellId, int successChancePercent);
@@ -422,6 +438,7 @@ namespace MWGui
     MapWindow *mMap;
     MWRender::LocalMap* mLocalMapRender;
     ToolTips *mToolTips;
+    QuickLoot *mQuickLoot;
     StatsWindow *mStatsWindow;
     MessageBoxManager *mMessageBoxManager;
     Console *mConsole;
@@ -463,6 +480,7 @@ namespace MWGui
     bool mHudEnabled;
     bool mCursorVisible;
     bool mCursorActive;
+    bool mUseKeyTooltip;
 
     int mPlayerBounty;
 

@@ -1073,11 +1073,16 @@ void CharacterController::handleTextKey(const std::string &groupname, const std:
         MWBase::Environment::get().getWorld()->castSpell(mPtr, mCastingManualSpell);
         mCastingManualSpell = false;
     }
-
     else if (groupname == "shield" && evt.compare(off, len, "block hit") == 0)
         mPtr.getClass().block(mPtr);
     else if (groupname == "containeropen" && evt.compare(off, len, "loot") == 0)
-        MWBase::Environment::get().getWindowManager()->pushGuiMode(MWGui::GM_Container, mPtr);
+    {  
+        if (!MWBase::Environment::get().getWindowManager()->isQuickLootAnimationPlaying())
+            MWBase::Environment::get().getWindowManager()->pushGuiMode(MWGui::GM_Container, mPtr);
+        else 
+            MWBase::Environment::get().getWindowManager()->setQuickLootAnimationPlaying(false);
+    }
+
 }
 
 void CharacterController::updatePtr(const MWWorld::Ptr &ptr)
