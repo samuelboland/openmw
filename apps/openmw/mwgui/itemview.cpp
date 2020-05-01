@@ -321,7 +321,7 @@ void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyG
             }
         }
     }
-    else if (key == MyGUI::KeyCode::Return || key == MyGUI::KeyCode::E)
+    else if (key == MyGUI::KeyCode::Return || key == MyGUI::KeyCode::Space)
         eventItemClicked(index);
 
     eventKeyButtonPressed(sender, key);
