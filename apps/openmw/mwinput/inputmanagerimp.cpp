@@ -1694,6 +1694,9 @@ namespace MWInput
         defaultKeyBindings[A_QuickSave] = SDL_SCANCODE_F5;
         defaultKeyBindings[A_QuickLoad] = SDL_SCANCODE_F9;
 
+        defaultKeyBindings[A_QuickLoot_Take] = SDL_SCANCODE_E;
+        defaultKeyBindings[A_QuickLoot_TakeAll] = SDL_SCANCODE_Q;
+
         std::map<int, int> defaultMouseButtonBindings;
         defaultMouseButtonBindings[A_Inventory] = SDL_BUTTON_RIGHT;
         defaultMouseButtonBindings[A_Use] = SDL_BUTTON_LEFT;
@@ -1991,6 +1994,10 @@ namespace MWInput
     std::vector<int> InputManager::getActionKeySorting()
     {
         std::vector<int> ret;
+
+        ret.push_back(A_QuickLoot_Take);
+        ret.push_back(A_QuickLoot_TakeAll);
+
         ret.push_back(A_MoveForward);
         ret.push_back(A_MoveBackward);
         ret.push_back(A_MoveLeft);

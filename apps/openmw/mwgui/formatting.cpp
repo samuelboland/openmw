@@ -411,7 +411,8 @@ namespace MWGui
             box->setNeedKeyFocus(false);
             box->setMaxTextLength(text.size());
             box->setTextAlign(mBlockStyle.mAlign);
-            box->setTextColour(mTextStyle.mColour);
+            //box->setTextColour(mTextStyle.mColour);
+            box->setTextColour(MyGUI::Colour("0.15 0.08 0.08"));
             //box->setFontName(mTextStyle.mFont);
             box->setFontName(mTextStyle.mFont);
             box->setFontHeight(13);

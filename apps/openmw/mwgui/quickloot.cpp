@@ -124,8 +124,11 @@ namespace MWGui
         if (!mModel->onTakeItem(item.mBase,count))
             return;
 
-        mModel->moveItem(item,count,MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel());
+        auto mod = mModel->moveItem(item,count,MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel());
         MWBase::Environment::get().getWindowManager()->getInventoryWindow()->updateItemView();
+
+        if (MyGUI::InputManager::getInstance().isControlPressed())
+            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(mod);
         mQuickLoot->update();
         mQuickLoot->forceItemFocused(index);
     }
@@ -177,7 +180,7 @@ namespace MWGui
 
     void QuickLoot::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
     {
-        if (key == MyGUI::KeyCode::T)
+        if (key == MyGUI::KeyCode::Q)
         {
             if (!mModel) return;
 
@@ -426,7 +429,9 @@ namespace MWGui
         mFocusObject = focus;
 
         bool combat = MWBase::Environment::get().getWorld()->getPlayer().isInCombat();
-        bool loot = mFocusObject.getClass().isActor() && mFocusObject.getClass().getCreatureStats(mFocusObject).isDead();
+        bool loot = mFocusObject.getClass().isActor() && 
+                    mFocusObject.getClass().getCreatureStats(mFocusObject).isDead() && 
+                    mFocusObject.getClass().getCreatureStats(mFocusObject).isDeathAnimationFinished();
         bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(MWMechanics::getPlayer());
         bool hide = false;
 
@@ -447,6 +452,11 @@ namespace MWGui
                     setVisibleAll(true);
                     if (MyGUI::InputManager::getInstance().getKeyFocusWidget() == nullptr)
                         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mQuickLoot);
+                }
+                else if (loot && sneaking)
+                {
+                    update(mFrameDuration);
+                    return;
                 }
                 else 
                     setVisibleAll(false);
