@@ -69,6 +69,7 @@
 #include "navmesh.hpp"
 #include "actorspaths.hpp"
 #include "recastmesh.hpp"
+#include "objectpaging.hpp"
 
 namespace
 {
@@ -235,6 +236,8 @@ namespace MWRender
         sceneRoot->setLightingMask(Mask_Lighting);
         mSceneRoot = sceneRoot;
         sceneRoot->setStartLight(1);
+        sceneRoot->setNodeMask(Mask_Scene);
+        sceneRoot->setName("Scene Root");
 
         int shadowCastingTraversalMask = Mask_Scene;
         if (Settings::Manager::getBool("actor shadows", "Shadows"))
@@ -313,6 +316,12 @@ namespace MWRender
             mTerrain.reset(new Terrain::QuadTreeWorld(
                 sceneRoot, mRootNode, mResourceSystem, mTerrainStorage, Mask_Terrain, Mask_PreCompile, Mask_Debug,
                 compMapResolution, compMapLevel, lodFactor, vertexLodMod, maxCompGeometrySize));
+            if (Settings::Manager::getBool("object paging", "Terrain"))
+            {
+                mObjectPaging.reset(new ObjectPaging(mResourceSystem->getSceneManager()));
+                static_cast<Terrain::QuadTreeWorld*>(mTerrain.get())->addChunkManager(mObjectPaging.get());
+                mResourceSystem->addResourceManager(mObjectPaging.get());
+            }
         }
         else
             mTerrain.reset(new Terrain::TerrainGrid(sceneRoot, mRootNode, mResourceSystem, mTerrainStorage, Mask_Terrain, Mask_PreCompile, Mask_Debug));
@@ -347,9 +356,6 @@ namespace MWRender
         defaultMat->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4f(0.f, 0.f, 0.f, 0.f));
         sceneRoot->getOrCreateStateSet()->setAttribute(defaultMat);
 
-        sceneRoot->setNodeMask(Mask_Scene);
-        sceneRoot->setName("Scene Root");
-
         mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
 
         mSky->setCamera(mViewer->getCamera());
@@ -377,6 +383,7 @@ namespace MWRender
 
         mViewer->getCamera()->setCullMask(~(Mask_UpdateVisitor|Mask_SimpleWater));
         NifOsg::Loader::setHiddenNodeMask(Mask_UpdateVisitor);
+        NifOsg::Loader::setIntersectionDisabledNodeMask(Mask_Effect);
 
         mNearClip = Settings::Manager::getFloat("near clip", "Camera");
         mViewDistance = Settings::Manager::getFloat("viewing distance", "Camera");
@@ -768,11 +775,10 @@ namespace MWRender
 
         void waitTillDone()
         {
-            mMutex.lock();
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(mMutex);
             if (mDone)
                 return;
             mCondition.wait(&mMutex);
-            mMutex.unlock();
         }
 
         mutable OpenThreads::Condition mCondition;
@@ -1182,6 +1188,8 @@ namespace MWRender
         mSky->setMoonColour(false);
 
         notifyWorldSpaceChanged();
+        if (mObjectPaging)
+            mObjectPaging->clear();
     }
 
     MWRender::Animation* RenderingManager::getAnimation(const MWWorld::Ptr &ptr)
@@ -1537,5 +1545,15 @@ namespace MWRender
             return;
 
         mRecastMesh->update(mNavigator.getRecastMeshTiles(), mNavigator.getSettings());
+    }
+
+    void RenderingManager::setActiveGrid(const osg::Vec4i &grid)
+    {
+        mTerrain->setActiveGrid(grid);
+    }
+    void RenderingManager::pagingEnableObject(const ESM::RefNum & refnum, bool enabled)
+    {
+        if (mObjectPaging)
+            mObjectPaging->enableObject(refnum, enabled);
     }
 }

@@ -57,7 +57,7 @@ namespace DetourNavigator
                                       const AreaType areaType)
     {
         return mRecastMeshManager.updateObject(id, shape, transform, areaType,
-            [&] (const auto& tile) { addChangedTile(tile, ChangeType::update); });
+            [&] (const TilePosition& tile) { addChangedTile(tile, ChangeType::update); });
     }
 
     bool NavMeshManager::removeObject(const ObjectId id)
@@ -191,7 +191,7 @@ namespace DetourNavigator
         mAsyncNavMeshUpdater.post(agentHalfExtents, cached, playerTile, tilesToPost);
         if (changedTiles != mChangedTiles.end())
             changedTiles->second.clear();
-        Log(Debug::Debug) << "cache update posted for agent=" << agentHalfExtents <<
+        Log(Debug::Debug) << "Cache update posted for agent=" << agentHalfExtents <<
             " playerTile=" << lastPlayerTile->second <<
             " recastMeshManagerRevision=" << lastRevision;
     }
