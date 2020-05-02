@@ -556,7 +556,7 @@
                     </Widget>
                 </Widget>
                 <Widget type="Widget" skin="MW_Box" position="4 32 352 100" align="Top Left HStretch">
-                    <Widget type="ScrollView" skin="MW_ScrollView" position="4 4 344 100" align="Stretch" name="MUIQuickLootBindings">
+                    <Widget type="ScrollView" skin="MW_ScrollView" position="4 4 344 100" align="Stretch" name="MUIControls">
                         <Property key="CanvasAlign" value="Left Top"/>
                     </Widget>
                 </Widget>

@@ -9,6 +9,7 @@
 #include <MyGUI_EditBox.h>
 
 #include <SDL_version.h>
+#include <SDL_system.h>
 
 #include <components/debug/debuglog.hpp>
 #include <components/sdlutil/sdlinputwrapper.hpp>
@@ -67,6 +68,8 @@ namespace MWInput
         , mGuiCursorEnabled(true)
         , mGamepadGuiCursorEnabled(true)
         , mDetectingKeyboard(false)
+        , mDetectingQuickLoot(false)
+        , mQuickLootKey("")
         , mOverencumberedMessageDelay(0.f)
         , mGuiCursorX(0)
         , mGuiCursorY(0)
@@ -474,6 +477,20 @@ namespace MWInput
         {
             //If it's not switching between those values, ignore the channel change.
             return;
+        }
+
+        if (MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
+        {
+            static const std::vector<int> quickLootKeys =  {
+                SDL_GetScancodeFromName(Settings::Manager::getString("key quickloot take", "MorroUI").c_str()),
+                SDL_GetScancodeFromName(Settings::Manager::getString("key quickloot takeall", "MorroUI").c_str())
+            };
+            
+            ICS::Control* c = channel->getAttachedControls ().front().control;
+            int scanCode = mInputBinder->getKeyBinding(c,ICS::Control::INCREASE);
+            
+            if (std::find(quickLootKeys.cbegin(), quickLootKeys.cend(),scanCode) != quickLootKeys.cend())
+                return;
         }
 
         if (mControlSwitch["playercontrols"])
@@ -1701,9 +1718,6 @@ namespace MWInput
         defaultKeyBindings[A_QuickSave] = SDL_SCANCODE_F5;
         defaultKeyBindings[A_QuickLoad] = SDL_SCANCODE_F9;
 
-        defaultKeyBindings[A_QuickLoot_Take] = SDL_SCANCODE_E;
-        defaultKeyBindings[A_QuickLoot_TakeAll] = SDL_SCANCODE_Q;
-
         std::map<int, int> defaultMouseButtonBindings;
         defaultMouseButtonBindings[A_Inventory] = SDL_BUTTON_RIGHT;
         defaultMouseButtonBindings[A_Use] = SDL_BUTTON_LEFT;
@@ -2002,9 +2016,6 @@ namespace MWInput
     {
         std::vector<int> ret;
 
-        ret.push_back(A_QuickLoot_Take);
-        ret.push_back(A_QuickLoot_TakeAll);
-
         ret.push_back(A_MoveForward);
         ret.push_back(A_MoveBackward);
         ret.push_back(A_MoveLeft);
@@ -2086,8 +2097,10 @@ namespace MWInput
         return ret;
     }
 
-    void InputManager::enableDetectingBindingMode (int action, bool keyboard)
+    void InputManager::enableDetectingBindingMode (int action, bool keyboard, bool quickloot, std::string key)
     {
+        mQuickLootKey = key;
+        mDetectingQuickLoot = quickloot;
         mDetectingKeyboard = keyboard;
         ICS::Control* c = mInputBinder->getChannel (action)->getAttachedControls ().front().control;
         mInputBinder->enableDetectingBindingState (c, ICS::Control::INCREASE);
@@ -2118,6 +2131,14 @@ namespace MWInput
         if(!mDetectingKeyboard)
             return;
 
+        if (mDetectingQuickLoot)
+        {
+            Settings::Manager::setString(mQuickLootKey, "MorroUI", SDL_GetScancodeName(key));
+            ICS->cancelDetectingBindingState();
+            MWBase::Environment::get().getWindowManager ()->notifyInputActionBound ();
+            return;
+        }
+
         clearAllKeyBindings(control);
         control->setInitialValue(0.0f);
         ICS::DetectingBindingListener::keyBindingDetected (ICS, control, key, direction);
@@ -2134,7 +2155,7 @@ namespace MWInput
     void InputManager::mouseButtonBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
         , unsigned int button, ICS::Control::ControlChangingDirection direction)
     {
-        if(!mDetectingKeyboard)
+        if(!mDetectingKeyboard || mDetectingQuickLoot)
             return;
         clearAllKeyBindings(control);
         control->setInitialValue(0.0f);
@@ -2145,7 +2166,7 @@ namespace MWInput
     void InputManager::mouseWheelBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
         , ICS::InputControlSystem::MouseWheelClick click, ICS::Control::ControlChangingDirection direction)
     {
-        if(!mDetectingKeyboard)
+        if(!mDetectingKeyboard || mDetectingQuickLoot)
             return;
         clearAllKeyBindings(control);
         control->setInitialValue(0.0f);
@@ -2181,7 +2202,7 @@ namespace MWInput
     }
 
     void InputManager::clearAllKeyBindings (ICS::Control* control)
-    {
+    { 
         // right now we don't really need multiple bindings for the same action, so remove all others first
         if (mInputBinder->getKeyBinding (control, ICS::Control::INCREASE) != SDL_SCANCODE_UNKNOWN)
             mInputBinder->removeKeyBinding (mInputBinder->getKeyBinding (control, ICS::Control::INCREASE));
