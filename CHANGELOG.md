@@ -8,6 +8,7 @@
     Bug #5364: Script fails/stops if trying to startscript an unknown script
     Bug #5367: Selecting a spell on an enchanted item per hotkey always plays the equip sound
     Bug #5369: Spawnpoint in the Grazelands doesn't produce oversized creatures
+    Bug #5370: Opening an unlocked but trapped door uses the key
     Feature #5362: Show the soul gems' trapped soul in count dialog
 
 0.46.0
@@ -165,7 +166,6 @@
     Bug #5099: Non-swimming enemies will enter water if player is water walking
     Bug #5103: Sneaking state behavior is still inconsistent
     Bug #5104: Black Dart's enchantment doesn't trigger at low Enchant levels
-    Bug #5105: NPCs start combat with werewolves from any distance
     Bug #5106: Still can jump even when encumbered
     Bug #5110: ModRegion with a redundant numerical argument breaks script execution
     Bug #5112: Insufficient magicka for current spell not reflected on HUD icon
@@ -217,7 +217,6 @@
     Bug #5264: "Damage Fatigue" Magic Effect Can Bring Fatigue below 0
     Bug #5269: Editor: Cell lighting in resaved cleaned content files is corrupted
     Bug #5278: Console command Show doesn't fall back to global variable after local var not found
-    Bug #5300: NPCs don't switch from torch to shield when starting combat
     Bug #5308: World map copying makes save loading much slower
     Bug #5313: Node properties of identical type are not applied in the correct order
     Bug #5326: Formatting issues in the settings.cfg

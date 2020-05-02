@@ -399,6 +399,8 @@ namespace MWGui
     virtual bool injectKeyRelease(MyGUI::KeyCode key);
 
   private:
+    unsigned int mOldUpdateMask; unsigned int mOldCullMask;
+
     const MWWorld::ESMStore* mStore;
     Resource::ResourceSystem* mResourceSystem;
     osg::ref_ptr<SceneUtil::WorkQueue> mWorkQueue;
@@ -571,6 +573,8 @@ namespace MWGui
     void setMenuTransparency(float value);
 
     void updatePinnedWindows();
+
+    void enableScene(bool enable);
   };
 }
 
