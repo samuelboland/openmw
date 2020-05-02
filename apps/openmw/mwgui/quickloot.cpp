@@ -418,7 +418,9 @@ namespace MWGui
 
     void QuickLoot::setFocusObject(const MWWorld::Ptr& focus)
     {
-        if (!mEnabled) return;
+        bool quickloot = Settings::Manager::getBool ("enable quickloot", "MorroUI");
+
+        if (!mEnabled || !quickloot) return;
 
         auto player = MWMechanics::getPlayer();
 

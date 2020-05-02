@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <MyGUI type="Layout" version="3.2.0">
     <Widget type="Window" skin="MW_Window" position="0 0 400 485" layer="Windows" name="_Main">
-        <Property key="MinSize" value="430 446"/>
+        <Property key="MinSize" value="530 546"/>
         <Widget type="TabControl" skin="TabControl" position="8 8 368 405" align="Stretch" name="SettingsTab">
             <Property key="ButtonAutoWidth" value="true"/>
             <Widget type="TabItem" skin="" position="4 32 360 358">
@@ -537,6 +537,66 @@
                     </Widget>
                     -->
                 </Widget>
+            </Widget>
+
+            <!-- MorroUI extension settings -->
+
+            <Widget type="TabItem" skin="" position="4 32 360 308">
+                <Property key="Caption" value="  MorroUI  "/>
+
+                <!-- QuickLoot options -->
+                <Widget type="HBox" skin="" position="4 4 260 24">
+                    <Widget type="AutoSizedButton" skin="MW_Button" position="0 0 24 24" align="Left Top">
+                        <UserString key="SettingCategory" value="MorroUI"/>
+                        <UserString key="SettingName" value="enable quickloot"/>
+                        <UserString key="SettingType" value="CheckButton"/>
+                    </Widget>
+                    <Widget type="AutoSizedTextBox" skin="SandText" position="28 4 80 16" align="Left Top">
+                        <Property key="Caption" value="Enable QuickLoot"/>
+                    </Widget>
+                </Widget>
+                <Widget type="Widget" skin="MW_Box" position="4 32 352 100" align="Top Left HStretch">
+                    <Widget type="ScrollView" skin="MW_ScrollView" position="4 4 344 100" align="Stretch" name="MUIQuickLootBindings">
+                        <Property key="CanvasAlign" value="Left Top"/>
+                    </Widget>
+                </Widget>
+
+                <!-- Tab Focus -->
+                <Widget type="HBox" skin="" position="4 140 260 24">
+                    <Widget type="AutoSizedButton" skin="MW_Button" position="0 0 24 24" align="Left Top">
+                        <UserString key="SettingCategory" value="MorroUI"/>
+                        <UserString key="SettingName" value="disable tab focus"/>
+                        <UserString key="SettingType" value="CheckButton"/>
+                    </Widget>
+                    <Widget type="AutoSizedTextBox" skin="SandText" position="28 4 80 16" align="Left Top">
+                        <Property key="Caption" value="Disable Tab Focus"/>
+                    </Widget>
+                </Widget>
+
+                <!-- Left Click Activates -->
+                <Widget type="HBox" skin="" position="4 170 260 24">
+                    <Widget type="AutoSizedButton" skin="MW_Button" position="0 0 24 24" align="Left Top">
+                        <UserString key="SettingCategory" value="MorroUI"/>
+                        <UserString key="SettingName" value="leftclick activates"/>
+                        <UserString key="SettingType" value="CheckButton"/>
+                    </Widget>
+                    <Widget type="AutoSizedTextBox" skin="SandText" position="28 4 80 16" align="Left Top">
+                        <Property key="Caption" value="Left Click Activates"/>
+                    </Widget>
+                </Widget>
+
+                <!-- Book Covers -->
+                <Widget type="HBox" skin="" position="4 200 260 24">
+                    <Widget type="AutoSizedButton" skin="MW_Button" position="0 0 24 24" align="Left Top">
+                        <UserString key="SettingCategory" value="MorroUI"/>
+                        <UserString key="SettingName" value="enable bookcovers"/>
+                        <UserString key="SettingType" value="CheckButton"/>
+                    </Widget>
+                    <Widget type="AutoSizedTextBox" skin="SandText" position="28 4 80 16" align="Left Top">
+                        <Property key="Caption" value="Dynamic Book Covers"/>
+                    </Widget>
+                </Widget>
+
             </Widget>
         </Widget>
         <Widget type="AutoSizedButton" skin="MW_Button" position="320 420 56 24" align="Right Bottom" name="OkButton">

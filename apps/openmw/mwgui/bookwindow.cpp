@@ -10,6 +10,7 @@
 
 #include <components/esm/loadbook.hpp>
 #include <components/vfs/manager.hpp>
+#include <components/settings/settings.hpp>
 #include <components/resource/resourcemanager.hpp>
 #include <components/resource/scenemanager.hpp>
 #include <components/resource/imagemanager.hpp>
@@ -121,54 +122,57 @@ namespace MWGui
         static const std::string defaultTex = "textures\\tx_menubook.dds";
         mBookJacket->setImageTexture(defaultTex);
 
-        //mJImage->setImageTexture("textures\\ui\\book_overlay.dds");
-        /*
-
-        // Cool Concept, but needs cool textures :(
-   
-        auto sceneMgr = mResourceSystem->getSceneManager();
-        auto bookPtr = mBook.get<ESM::Book>();
+        bool bookcovers = Settings::Manager::getBool ("enable bookcovers", "MorroUI");
         
-        auto model = book.getClass().getModel(book);
-                
-        auto nifPtr = mResourceSystem->getNifFileManager()->get(model);
-
-        static const std::array<std::string,4> blacklist = {"_p.","_page.","_pages.", "_g."};
-
-        for (size_t i = 0; i < nifPtr->numRecords(); i++)
+        if (bookcovers)
         {
-            auto record = nifPtr->getRecord(i);
-            if (record->recType == Nif::RC_NiTexturingProperty)
+            mJImage->setImageTexture("textures\\ui\\book_overlay.dds");
+    
+            auto sceneMgr = mResourceSystem->getSceneManager();
+            auto bookPtr = mBook.get<ESM::Book>();
+
+            auto model = book.getClass().getModel(book);
+
+            auto nifPtr = mResourceSystem->getNifFileManager()->get(model);
+
+            static const std::array<std::string,6> blacklist = {"_p.","_page.","_pages.", "_g.", "_wax", "_edge"};
+
+            for (size_t i = 0; i < nifPtr->numRecords(); i++)
             {
-                auto texprop = static_cast<const Nif::NiTexturingProperty*>(record);
-                if (texprop)
-                {   
-                    int base = Nif::NiTexturingProperty::BaseTexture;
-                    auto tex = texprop->textures[base];
-                    if (tex.inUse)
-                    {
-                        const Nif::NiTexturingProperty::Texture& tex = texprop->textures[base];
-                        if (!tex.texture.empty())
+                auto record = nifPtr->getRecord(i);
+                if (record->recType == Nif::RC_NiTexturingProperty)
+                {
+                    auto texprop = static_cast<const Nif::NiTexturingProperty*>(record);
+                    if (texprop)
+                    {   
+                        int base = Nif::NiTexturingProperty::BaseTexture;
+                        auto tex = texprop->textures[base];
+                        if (tex.inUse)
                         {
-                            bool falsePositive = false;
-                            std::string filepath = Misc::ResourceHelpers::correctResourcePath("textures",tex.texture->filename,mResourceSystem->getVFS());
+                            const Nif::NiTexturingProperty::Texture& tex = texprop->textures[base];
+                            if (!tex.texture.empty())
+                            {
+                                bool falsePositive = false;
+                                std::string filepath = Misc::ResourceHelpers::correctResourcePath("textures",tex.texture->filename,mResourceSystem->getVFS());
 
-                            for (const std::string& item : blacklist)
-                                if (filepath.find(item) != std::string::npos)
-                                {
-                                    falsePositive = true;
-                                    break;
-                                }
-                            if (falsePositive) continue;
+                                for (const std::string& item : blacklist)
+                                    if (filepath.find(item) != std::string::npos)
+                                    {
+                                        falsePositive = true;
+                                        break;
+                                    }
+                                if (falsePositive) continue;
 
-                           mResourceSystem->getVFS()->normalizeFilename(filepath);
-                           mBookJacket->setImageTexture(filepath);
-                           break;
+                               mResourceSystem->getVFS()->normalizeFilename(filepath);
+                               //std::cout << "Using texture: " << filepath << std::endl;
+                               mBookJacket->setImageTexture(filepath);
+                               break;
+                            }
                         }
                     }
                 }
             }
-        }*/
+        }
         updatePages();
 
         setTakeButtonShow(showTakeButton);

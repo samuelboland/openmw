@@ -492,7 +492,7 @@ namespace MWInput
                     mPlayer->setAttackingOrSpell(currentValue != 0 && state != MWMechanics::DrawState_Nothing);
                 }
             }
-            else if (action == A_Jump && !MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
+            else if (action == A_Jump)
             {
                 if(mJoystickLastUsed && currentValue == 1.0 && actionIsActive(A_ToggleWeapon))
                     action = A_CycleWeaponLeft;

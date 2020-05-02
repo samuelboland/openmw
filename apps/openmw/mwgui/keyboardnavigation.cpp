@@ -7,6 +7,7 @@
 #include <MyGUI_Window.h>
 
 #include <components/debug/debuglog.hpp>
+#include <components/settings/settings.hpp>
 
 #include "../mwbase/windowmanager.hpp"
 #include "../mwbase/environment.hpp"
@@ -222,6 +223,9 @@ bool KeyboardNavigation::injectKeyPress(MyGUI::KeyCode key, unsigned int text, b
 
 bool KeyboardNavigation::switchFocus(int direction, bool wrap)
 {
+    bool disable = Settings::Manager::getBool ("disable tab focus", "MorroUI");
+    if (MWBase::Environment::get().getWindowManager()->getMode() == GM_Inventory && disable)
+        return false;
     //if (!MWBase::Environment::get().getWindowManager()->isGuiMode())
     //    return false;
 

@@ -496,7 +496,7 @@ namespace MWGui
         auto item = model->getItem(index);
         if (key == MyGUI::KeyCode::X) // use/activate 
         {
-            mDrop = Settings::Manager::getBool("leftclick activates", "Input"); 
+            mDrop = Settings::Manager::getBool("leftclick activates", "MorroUI"); 
             if (!mDrop)
             {
                 if (item.mBase.isEmpty()) return;
@@ -654,7 +654,7 @@ namespace MWGui
 
         auto mode = MWBase::Environment::get().getWindowManager()->getMode();
 
-        bool leftClickActivates = Settings::Manager::getBool("leftclick activates", "Input"); 
+        bool leftClickActivates = Settings::Manager::getBool("leftclick activates", "MorroUI"); 
  
         if (count > 1 && !shift)
         {
