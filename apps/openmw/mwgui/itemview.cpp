@@ -12,17 +12,20 @@
 #include "../mwworld/class.hpp"
 #include "../mwworld/inventorystore.hpp"
 
+#include "../mwbase/environment.hpp"
 #include "../mwbase/inputmanager.hpp"
 #include "../mwbase/windowmanager.hpp"
-#include "../mwbase/environment.hpp"
 
 #include "../mwmechanics/actorutil.hpp"
 
-#include "inventorywindow.hpp"
-#include "itemlistwidget.hpp"
-#include "itemlistwidgetheader.hpp"
+#include "../mwinput/inputmanagerimp.hpp"
+
 #include "itemmodel.hpp"
+#include "quickloot.hpp"
 #include "itemwidget.hpp"
+#include "itemlistwidget.hpp"
+#include "inventorywindow.hpp"
+#include "itemlistwidgetheader.hpp"
 
 namespace MWGui
 {
@@ -321,7 +324,15 @@ void ItemView::onKeyButtonPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyG
             }
         }
     }
-    else if (key == MyGUI::KeyCode::Return || key == MyGUI::KeyCode::Space)
+    else if (MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
+    {
+        SDL_Keycode quickkey = SDL_GetKeyFromName(Settings::Manager::getString("key quickloot take", "MorroUI").c_str());
+        OIS::KeyCode kc = MWBase::Environment::get().getInputManager()->sdl2OISKeyCode(quickkey);
+
+        if (static_cast<int>(key.getValue()) == static_cast<int>(kc))
+            eventItemClicked(index);
+    }
+    else if (key == MyGUI::KeyCode::Return)
         eventItemClicked(index);
 
     eventKeyButtonPressed(sender, key);

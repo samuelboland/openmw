@@ -167,6 +167,8 @@ namespace MWInput
         virtual void write(ESM::ESMWriter& writer, Loading::Listener& progress);
         virtual void readRecord(ESM::ESMReader& reader, uint32_t type);
 
+        OIS::KeyCode sdl2OISKeyCode(SDL_Keycode key) const;
+
     private:
         enum GyroscopeAxis
         {
@@ -217,6 +219,7 @@ namespace MWInput
         bool mDetectingKeyboard;
         bool mDetectingQuickLoot;
         std::string mQuickLootKey;
+        bool mQuickLootBlock;
 
         float mOverencumberedMessageDelay;
 

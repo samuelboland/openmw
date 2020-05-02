@@ -70,6 +70,7 @@ namespace MWInput
         , mDetectingKeyboard(false)
         , mDetectingQuickLoot(false)
         , mQuickLootKey("")
+        , mQuickLootBlock(false)
         , mOverencumberedMessageDelay(0.f)
         , mGuiCursorX(0)
         , mGuiCursorY(0)
@@ -489,9 +490,15 @@ namespace MWInput
             ICS::Control* c = channel->getAttachedControls ().front().control;
             int scanCode = mInputBinder->getKeyBinding(c,ICS::Control::INCREASE);
             
-            if (std::find(quickLootKeys.cbegin(), quickLootKeys.cend(),scanCode) != quickLootKeys.cend())
-                return;
+            for (int k : quickLootKeys)
+                if (k == scanCode) 
+                {
+                    mQuickLootBlock = true;
+                    return;
+                }
         }
+
+        mQuickLootBlock = false;
 
         if (mControlSwitch["playercontrols"])
         {
@@ -789,7 +796,8 @@ namespace MWInput
 
         // Disable movement in Gui mode
         if (!(winMgr->isGuiMode()
-            || MWBase::Environment::get().getStateManager()->getState() != MWBase::StateManager::State_Running))
+            || MWBase::Environment::get().getStateManager()->getState() != MWBase::StateManager::State_Running)
+            || mQuickLootBlock)
         {
             // Configure player movement according to keyboard input. Actual movement will
             // be done in the physics system.
@@ -1060,6 +1068,11 @@ namespace MWInput
             MWBase::Environment::get().getWorld()->rotateObject(mPlayer->getPlayer(), 0.f, 0.f, 0.f);
         }
         mControlSwitch[sw] = value;
+    }
+
+    OIS::KeyCode InputManager::sdl2OISKeyCode(SDL_Keycode key) const
+    {
+        return mInputManager->sdl2OISKeyCode(key);
     }
 
     void InputManager::keyPressed( const SDL_KeyboardEvent &arg )

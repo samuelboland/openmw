@@ -603,10 +603,10 @@
                     <Property key="TextAlign" value="Left"/>
                 </Widget>
                 <Widget type="ScrollBar" skin="MW_HScroll" position="4 264 352 14" align="Left Top HStretch">
-                        <Property key="Range" value="40"/>
+                        <Property key="Range" value="36"/>
                         <Property key="Page" value="1"/>
-                        <UserString key="SettingMin" value="2"/>
-                        <UserString key="SettingMax" value="40"/>
+                        <UserString key="SettingMin" value="4"/>
+                        <UserString key="SettingMax" value="34"/>
                         <UserString key="SettingType" value="Slider"/>
                         <UserString key="SettingCategory" value="MorroUI"/>
                         <UserString key="SettingName" value="book font size"/>

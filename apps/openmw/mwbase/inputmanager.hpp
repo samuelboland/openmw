@@ -1,6 +1,8 @@
 #ifndef GAME_MWBASE_INPUTMANAGER_H
 #define GAME_MWBASE_INPUTMANAGER_H
 
+#include <components/sdlutil/OISCompat.hpp>
+
 #include <string>
 #include <set>
 #include <vector>
@@ -73,6 +75,8 @@ namespace MWBase
             virtual int countSavedGameRecords() const = 0;
             virtual void write(ESM::ESMWriter& writer, Loading::Listener& progress) = 0;
             virtual void readRecord(ESM::ESMReader& reader, uint32_t type) = 0;
+
+            virtual OIS::KeyCode sdl2OISKeyCode(SDL_Keycode key) const = 0;
     };
 }
 

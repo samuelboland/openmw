@@ -30,6 +30,8 @@
 #include "../mwmechanics/actorutil.hpp"
 #include "../mwmechanics/creaturestats.hpp"
 
+#include "../mwinput/inputmanagerimp.hpp"
+
 #include "../mwrender/animation.hpp"
 
 #include "inventorywindow.hpp"
@@ -189,7 +191,10 @@ namespace MWGui
 
     void QuickLoot::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
     {
-        if (key == MyGUI::KeyCode::Q) // take all 
+        SDL_Keycode quickkey = SDL_GetKeyFromName(Settings::Manager::getString("key quickloot takeall", "MorroUI").c_str());
+        OIS::KeyCode kc = MWBase::Environment::get().getInputManager()->sdl2OISKeyCode(quickkey);
+
+        if (static_cast<int>(key.getValue()) == static_cast<int>(kc)) // take all 
         {
             if (!mModel) return;
 
@@ -363,6 +368,10 @@ namespace MWGui
         if (mFocusObject.isEmpty() || mFocusObject.getTypeName() != typeid(ESM::Container).name()) 
             return;
         auto* anim = MWBase::Environment::get().getWorld()->getAnimation(mFocusObject);
+
+        if (!anim)
+            return;
+
         if (!anim->hasAnimation("containeropen") || 
             anim->isPlaying("containeropen") || 
             anim->isPlaying("containerclose"))
