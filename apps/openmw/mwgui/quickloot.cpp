@@ -132,11 +132,11 @@ namespace MWGui
 
         ItemModel* playerModel = MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel();
         mModel->update();
-        mModel->moveItem(item, item.mCount, playerModel);
+        auto movedItem = mModel->moveItem(item, item.mCount, playerModel);
         MWBase::Environment::get().getWindowManager()->getInventoryWindow()->updateItemView();
 
         if (MyGUI::InputManager::getInstance().isControlPressed())
-            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(item.mBase);
+            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(movedItem);
 
         mQuickLoot->update();
         mQuickLoot->forceItemFocused(index);

@@ -173,6 +173,9 @@ namespace MWGui
                 }
             }
         }
+        else 
+            mJImage->setImageTexture(defaultTex);
+
         updatePages();
 
         setTakeButtonShow(showTakeButton);
