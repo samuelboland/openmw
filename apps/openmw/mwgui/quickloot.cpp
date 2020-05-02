@@ -19,10 +19,12 @@
 #include "../mwworld/player.hpp"
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/actionopen.hpp"
+#include "../mwworld/actiontake.hpp"
 #include "../mwworld/actiontrap.hpp"
 #include "../mwworld/inventorystore.hpp"
 
 #include "../mwmechanics/actor.hpp"
+#include "../mwmechanics/disease.hpp"
 #include "../mwmechanics/npcstats.hpp"
 #include "../mwmechanics/character.hpp"
 #include "../mwmechanics/actorutil.hpp"
@@ -104,14 +106,18 @@ namespace MWGui
 
     void QuickLoot::onItemSelected(int index)
     {
-        if (!mModel) return;
+        if (!mModel) 
+            return;
 
+        if (!MWBase::Environment::get().getWindowManager()->isAllowed(MWGui::GW_Inventory))
+            return;
+        
         mOpened = true;
-
         ensureTrapTriggered();
-
+        MWMechanics::diseaseContact(MWMechanics::getPlayer(), mFocusObject);
+        
         const ItemStack& item = mModel->getItem(mSortModel->mapToSource(index));
-        std::string sound = item.mBase.getClass().getDownSoundId(item.mBase);
+        std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
         MWBase::Environment::get().getWindowManager()->playSound(sound);
 
         MWWorld::Ptr object = item.mBase;
@@ -124,11 +130,14 @@ namespace MWGui
         if (!mModel->onTakeItem(item.mBase,count))
             return;
 
-        auto mod = mModel->moveItem(item,count,MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel());
+        ItemModel* playerModel = MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel();
+        mModel->update();
+        mModel->moveItem(item, item.mCount, playerModel);
         MWBase::Environment::get().getWindowManager()->getInventoryWindow()->updateItemView();
 
         if (MyGUI::InputManager::getInstance().isControlPressed())
-            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(mod);
+            MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(item.mBase);
+
         mQuickLoot->update();
         mQuickLoot->forceItemFocused(index);
     }
@@ -180,12 +189,13 @@ namespace MWGui
 
     void QuickLoot::onKeyButtonPressed(MyGUI::Widget* sender, MyGUI::KeyCode key)
     {
-        if (key == MyGUI::KeyCode::Q)
+        if (key == MyGUI::KeyCode::Q) // take all 
         {
             if (!mModel) return;
 
             mOpened = true;
             ensureTrapTriggered();
+            MWMechanics::diseaseContact(MWMechanics::getPlayer(), mFocusObject);
 
             // transfer everything into the player's inventory
             ItemModel* playerModel = MWBase::Environment::get().getWindowManager()->getInventoryWindow()->getModel();
@@ -370,6 +380,9 @@ namespace MWGui
 
         auto* anim = MWBase::Environment::get().getWorld()->getAnimation(mFocusObject);
 
+        if (!anim)
+            return;
+
         if (!anim->hasAnimation("containerclose"))
             return;
 
@@ -407,11 +420,15 @@ namespace MWGui
     {
         if (!mEnabled) return;
 
-        bool werewolf = MWMechanics::getPlayer().getClass().getNpcStats(MWMechanics::getPlayer()).isWerewolf();
+        auto player = MWMechanics::getPlayer();
 
+        bool werewolf = player.getClass().getNpcStats(player).isWerewolf();
+        bool incapacitated = (player.getClass().getCreatureStats(player).isParalyzed() || 
+                             player.getClass().getCreatureStats(player).getKnockedDown());
         if (focus.isEmpty() || 
             MWBase::Environment::get().getWindowManager()->isGuiMode() || 
-            werewolf || 
+            werewolf ||
+            incapacitated ||  
             (focus.getTypeName() != typeid(ESM::Container).name() && !focus.getClass().hasInventoryStore(focus)))
         {
             setVisibleAll(false);
@@ -434,7 +451,7 @@ namespace MWGui
         bool loot = mFocusObject.getClass().isActor() && 
                     mFocusObject.getClass().getCreatureStats(mFocusObject).isDead() && 
                     mFocusObject.getClass().getCreatureStats(mFocusObject).isDeathAnimationFinished();
-        bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(MWMechanics::getPlayer());
+        bool sneaking = MWBase::Environment::get().getMechanicsManager()->isSneaking(player);
         bool hide = false;
 
         if (mFocusObject.getClass().hasInventoryStore(mFocusObject) && mFocusObject.getClass().isNpc())
@@ -472,7 +489,6 @@ namespace MWGui
             mSortModel = nullptr;
             mModel = nullptr;
         }
-
         update(mFrameDuration);
     }
 

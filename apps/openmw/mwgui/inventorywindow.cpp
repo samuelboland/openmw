@@ -41,6 +41,8 @@
 #include "widgets.hpp"
 #include "tooltips.hpp"
 
+#include "quickloot.hpp"
+
 #include "descriptions.hpp"
 
 namespace
@@ -1140,7 +1142,8 @@ namespace MWGui
     void InventoryWindow::pickUpObject (MWWorld::Ptr object)
     {
         // If the inventory is not yet enabled, don't pick anything up
-        if (!MWBase::Environment::get().getWindowManager()->isAllowed(GW_Inventory))
+        if (!MWBase::Environment::get().getWindowManager()->isAllowed(GW_Inventory) && 
+            !MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
             return;
         // make sure the object is of a type that can be picked up
         std::string type = object.getTypeName();
