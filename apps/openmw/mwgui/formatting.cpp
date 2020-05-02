@@ -412,10 +412,10 @@ namespace MWGui
             box->setMaxTextLength(text.size());
             box->setTextAlign(mBlockStyle.mAlign);
             //box->setTextColour(mTextStyle.mColour);
-            box->setTextColour(MyGUI::Colour("0.15 0.08 0.08"));
+            box->setTextColour(MyGUI::Colour("0.10 0.08 0.08"));
             //box->setFontName(mTextStyle.mFont);
             box->setFontName(mTextStyle.mFont);
-            box->setFontHeight(13);
+            box->setFontHeight(Settings::Manager::getInt("book font size", "MorroUI"));
             box->setCaption(MyGUI::TextIterator::toTagsString(text));
             box->setSize(box->getSize().width, box->getTextSize().height);
             mEditBox = box;
@@ -429,7 +429,7 @@ namespace MWGui
         int TextElement::pageSplit()
         {
             // split lines
-            const int lineHeight = 13;
+            const int lineHeight = Settings::Manager::getInt("book font size", "MorroUI"); 
             unsigned int lastLine = (mPaginator.getStartTop() + mPaginator.getPageHeight() - mPaginator.getCurrentTop());
             if (lineHeight > 0)
                 lastLine /= lineHeight;
