@@ -222,39 +222,9 @@ namespace MWGui
                 key = MWBase::Environment::get().getWorld()->getStore().get<ESM::Creature>().search(ptr.getCellRef().getSoul())->mId;
                 description = filledGemDescriptions.at(key);
             }
-            else if (ptr.getTypeName() == typeid(ESM::Armor).name())
-                key = ptr.get<ESM::Armor>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Clothing).name())
-                key = ptr.get<ESM::Clothing>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Ingredient).name())
-                key = ptr.get<ESM::Ingredient>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Potion).name())
-                key = ptr.get<ESM::Potion>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Armor).name())   
-                key = ptr.get<ESM::Armor>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Weapon).name())
-                key = ptr.get<ESM::Weapon>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Clothing).name())   
-                key = ptr.get<ESM::Clothing>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Potion).name())   
-                key = ptr.get<ESM::Potion>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Ingredient).name())   
-                key = ptr.get<ESM::Ingredient>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Lockpick).name())
-                key = ptr.get<ESM::Lockpick>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Probe).name())
-                key = ptr.get<ESM::Probe>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Repair).name())
-                key = ptr.get<ESM::Repair>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Apparatus).name())   
-                key = ptr.get<ESM::Apparatus>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Book).name())   
-                key = ptr.get<ESM::Book>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Light).name())
-                key = ptr.get<ESM::Light>()->mBase->mId;
-            else if (ptr.getTypeName() == typeid(ESM::Miscellaneous).name()) 
-                key = ptr.get<ESM::Miscellaneous>()->mBase->mId;
-            
+            else 
+                key = ptr.getCellRef().getRefId(); 
+ 
             const auto it = generalDescriptions.find(key);
             if (description.empty() && it != generalDescriptions.cend())
                 description = it->second; 
