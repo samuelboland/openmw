@@ -1473,6 +1473,7 @@ namespace MWGui
     MWGui::ConfirmationDialog* WindowManager::getConfirmationDialog() { return mConfirmationDialog; }
     MWGui::TradeWindow* WindowManager::getTradeWindow() { return mTradeWindow; }
     MWGui::QuickKeysMenu* WindowManager::getQuickKeysMenu() { return mQuickKeysMenu; }
+    MWGui::QuickLoot* WindowManager::getQuickLoot() { return mQuickLoot; }
 
     void WindowManager::useItem(const MWWorld::Ptr &item, bool bypassBeastRestrictions)
     {
@@ -1567,26 +1568,6 @@ namespace MWGui
     bool WindowManager::isConsoleMode() const
     {
         return mConsole && mConsole->isVisible();
-    }
-
-    bool WindowManager::isQuickLootMode() const
-    {
-        return mQuickLoot->isVisible();
-    }
-
-    bool WindowManager::isQuickLootAnimationPlaying() const
-    {
-        return mQuickLoot->isPlaying();
-    }
-
-    void WindowManager::setQuickLootAnimationPlaying(bool playing)
-    {
-        mQuickLoot->setPlaying(playing);
-    }
-    
-    void WindowManager::closeQuickLoot()
-    {
-        mQuickLoot->setFocusObject(nullptr);
     }
 
     void WindowManager::notifyMouseWheel(int rel)

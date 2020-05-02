@@ -167,14 +167,6 @@ namespace MWGui
 
     virtual bool isConsoleMode() const;
 
-    virtual bool isQuickLootMode() const;
-
-    virtual bool isQuickLootAnimationPlaying() const;
-
-    virtual void setQuickLootAnimationPlaying(bool playing);
-
-    virtual void closeQuickLoot();
-
     virtual void notifyMouseWheel(int rel);
 
     virtual void toggleVisible(GuiWindow wnd);
@@ -196,6 +188,7 @@ namespace MWGui
     virtual MWGui::ConfirmationDialog* getConfirmationDialog();
     virtual MWGui::TradeWindow* getTradeWindow();
     virtual MWGui::QuickKeysMenu* getQuickKeysMenu();
+    virtual MWGui::QuickLoot* getQuickLoot();
 
     /// Make the player use an item, while updating GUI state accordingly
     virtual void useItem(const MWWorld::Ptr& item, bool bypassBeastRestrictions=false);

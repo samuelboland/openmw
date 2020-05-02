@@ -14,6 +14,7 @@
 #include "../mwbase/mechanicsmanager.hpp"
 
 #include "../mwgui/quickkeysmenu.hpp"
+#include "../mwgui/quickloot.hpp"
 
 #include "../mwmechanics/weapontype.hpp"
 #include "../mwmechanics/actorutil.hpp"
@@ -211,7 +212,7 @@ namespace MWGui
     {
         if (focus)
         {
-            if (!MWBase::Environment::get().getWindowManager()->isQuickLootMode())
+            if (!MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
             {
                 MWBase::Environment::get().getWindowManager()->playSound("Inventory Hover");
                 MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(this);

@@ -40,6 +40,8 @@
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/player.hpp"
 
+#include "../mwgui/quickloot.hpp"
+
 #include "aicombataction.hpp"
 #include "movement.hpp"
 #include "npcstats.hpp"
@@ -47,6 +49,7 @@
 #include "security.hpp"
 #include "actorutil.hpp"
 #include "spellcasting.hpp"
+
 
 namespace
 {
@@ -1077,10 +1080,10 @@ void CharacterController::handleTextKey(const std::string &groupname, const std:
         mPtr.getClass().block(mPtr);
     else if (groupname == "containeropen" && evt.compare(off, len, "loot") == 0)
     {  
-        if (!MWBase::Environment::get().getWindowManager()->isQuickLootAnimationPlaying())
+        if (!MWBase::Environment::get().getWindowManager()->getQuickLoot()->isPlaying())
             MWBase::Environment::get().getWindowManager()->pushGuiMode(MWGui::GM_Container, mPtr);
         else 
-            MWBase::Environment::get().getWindowManager()->setQuickLootAnimationPlaying(false);
+            MWBase::Environment::get().getWindowManager()->getQuickLoot()->setPlaying(false);
     }
 
 }

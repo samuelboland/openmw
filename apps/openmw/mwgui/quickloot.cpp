@@ -405,6 +405,8 @@ namespace MWGui
 
     void QuickLoot::setFocusObject(const MWWorld::Ptr& focus)
     {
+        if (!mEnabled) return;
+
         bool werewolf = MWMechanics::getPlayer().getClass().getNpcStats(MWMechanics::getPlayer()).isWerewolf();
 
         if (focus.isEmpty() || 

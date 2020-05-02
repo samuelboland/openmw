@@ -55,6 +55,7 @@ namespace MWGui
     class Layout;
 
     class Console;
+    class QuickLoot;
     class SpellWindow;
     class TradeWindow;
     class TravelWindow;
@@ -127,14 +128,6 @@ namespace MWBase
 
             virtual bool isConsoleMode() const = 0;
 
-            virtual bool isQuickLootMode() const = 0;
-
-            virtual bool isQuickLootAnimationPlaying() const = 0;
-
-            virtual void setQuickLootAnimationPlaying(bool playing) = 0;
-
-            virtual void closeQuickLoot() = 0;
-
             virtual void notifyMouseWheel(int rel) = 0;
 
             virtual void toggleVisible (MWGui::GuiWindow wnd) = 0;
@@ -156,6 +149,7 @@ namespace MWBase
             virtual MWGui::ConfirmationDialog* getConfirmationDialog() = 0;
             virtual MWGui::TradeWindow* getTradeWindow() = 0;
             virtual MWGui::QuickKeysMenu* getQuickKeysMenu() = 0;
+            virtual MWGui::QuickLoot* getQuickLoot() = 0;
 
             /// Make the player use an item, while updating GUI state accordingly
             virtual void useItem(const MWWorld::Ptr& item, bool force=false) = 0;

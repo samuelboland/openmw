@@ -31,6 +31,8 @@
 #include "../mwmechanics/npcstats.hpp"
 #include "../mwmechanics/actorutil.hpp"
 
+#include "../mwgui/quickloot.hpp"
+
 namespace MWInput
 {
     InputManager::InputManager(
@@ -490,7 +492,7 @@ namespace MWInput
                     mPlayer->setAttackingOrSpell(currentValue != 0 && state != MWMechanics::DrawState_Nothing);
                 }
             }
-            else if (action == A_Jump && !MWBase::Environment::get().getWindowManager()->isQuickLootMode())
+            else if (action == A_Jump && !MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
             {
                 if(mJoystickLastUsed && currentValue == 1.0 && actionIsActive(A_ToggleWeapon))
                     action = A_CycleWeaponLeft;
@@ -590,12 +592,12 @@ namespace MWInput
             case A_ZoomIn:
                 if (mControlSwitch["playerviewswitch"] && mControlSwitch["playercontrols"] && 
                     !MWBase::Environment::get().getWindowManager()->isGuiMode() && 
-                    !MWBase::Environment::get().getWindowManager()->isQuickLootMode())
+                    !MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
                     MWBase::Environment::get().getWorld()->setCameraDistance(ZOOM_SCALE, true, true);
                 break;
             case A_ZoomOut:
                 if (mControlSwitch["playerviewswitch"] && mControlSwitch["playercontrols"] && 
-                    !MWBase::Environment::get().getWindowManager()->isQuickLootMode() && 
+                    !MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible() && 
                     !MWBase::Environment::get().getWindowManager()->isGuiMode())
                     MWBase::Environment::get().getWorld()->setCameraDistance(-ZOOM_SCALE, true, true);
                 break;
@@ -1021,6 +1023,11 @@ namespace MWInput
 
     void InputManager::toggleControlSwitch (const std::string& sw, bool value)
     {
+        if (sw == "playercontrols" && !value)
+            MWBase::Environment::get().getWindowManager()->getQuickLoot()->setEnabled(false);
+        else 
+            MWBase::Environment::get().getWindowManager()->getQuickLoot()->setEnabled(true);
+
         /// \note 7 switches at all, if-else is relevant
         if (sw == "playercontrols" && !value) {
             mPlayer->setLeftRight(0);
@@ -1226,7 +1233,7 @@ namespace MWInput
             rot[2] = -x;
 
             // send a "fake" mouse wheel event to our quick loot menu, not sure how to do this properly 
-            if (arg.zrel && MWBase::Environment::get().getWindowManager()->isQuickLootMode())
+            if (arg.zrel && MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
                 MWBase::Environment::get().getWindowManager()->notifyMouseWheel(arg.zrel);
 
             // Only actually turn player when we're not in vanity mode
