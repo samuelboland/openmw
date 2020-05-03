@@ -88,24 +88,26 @@
         </Widget>
 
         <Widget type="HBox" position="8 535 268 23" align="Right Bottom HStretch">
-        <!-- Effect Filter -->
-        <Widget type="ComboBox" skin="MW_ComboBox" position="8 535 268 24" name="FilterValue" align="Left Bottom HStretch">
-            <UserString key="HStretch" value="true"/>
-            <Property key="ModeDrop" value="false"/>
+            <!-- Effect Filter -->
+            <Widget type="ComboBox" skin="MW_ComboBox" position="8 535 268 24" name="FilterValue" align="Left Bottom HStretch">
+                <UserString key="HStretch" value="true"/>
+                <Property key="ModeDrop" value="false"/>
+            </Widget>
+            
         </Widget>
-            <Widget type="Spacer"/>
             <!-- Spell deletion button -->
             <Widget type="AutoSizedButton" skin="MW_Button" align="Right Bottom" position="8 535 0 23" name="DeleteSpellButton">
                 <Property key="Caption" value="#{sDelete}"/>
                 <Property key="NeedKey" value="false"/>
+                <Property key="Visible" value="false"/>
             </Widget>
-        </Widget>
+            
 
         <!-- Search box-->
         <Widget type="EditBox" skin="MW_TextBoxEditWithBorder" position="8 535 268 23" align="Left Bottom HStretch" name="FilterEdit">
             <UserString key="AcceptTab" value="true"/>
             <Property key="Visible" value="false"/>
         </Widget>
-
+        
     </Widget>
 </MyGUI>
