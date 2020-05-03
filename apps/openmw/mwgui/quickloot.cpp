@@ -85,7 +85,11 @@ namespace MWGui
     void QuickLoot::notifyMouseWheel(int rel)
     {
         if (rel < 0)
+        {
             mLastIndex++;
+            if (mSortModel && mLastIndex >= mSortModel->getItemCount())
+                mLastIndex = mSortModel->getItemCount()-1;
+        }
         else 
             mLastIndex = std::max(0, mLastIndex - 1);
 
