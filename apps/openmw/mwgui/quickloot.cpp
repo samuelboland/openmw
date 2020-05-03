@@ -482,6 +482,10 @@ namespace MWGui
                 {
                     mQuickLoot->forceItemFocused(mLastIndex);
                     mQuickLoot->update();
+
+                    if (mLastIndex >= mSortModel->getItemCount())
+                        mLastIndex = mSortModel->getItemCount()-1;
+
                     setVisibleAll(true);
                     if (MyGUI::InputManager::getInstance().getKeyFocusWidget() == nullptr)
                         MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mQuickLoot);
