@@ -119,8 +119,6 @@ namespace MWGui
         MWMechanics::diseaseContact(MWMechanics::getPlayer(), mFocusObject);
         
         const ItemStack& item = mModel->getItem(mSortModel->mapToSource(index));
-        std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
-        MWBase::Environment::get().getWindowManager()->playSound(sound);
 
         MWWorld::Ptr object = item.mBase;
         int count = 1;
