@@ -137,6 +137,11 @@ namespace MWGui
 
         if (MyGUI::InputManager::getInstance().isControlPressed())
             MWBase::Environment::get().getWindowManager()->getInventoryWindow()->useItem(movedItem);
+        else 
+        {
+            std::string sound = item.mBase.getClass().getUpSoundId(item.mBase);
+            MWBase::Environment::get().getWindowManager()->playSound(sound);
+        }
 
         mQuickLoot->update();
         mQuickLoot->forceItemFocused(index);
